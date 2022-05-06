@@ -1,3 +1,7 @@
+"""
+species is a structure that holds the NASA 9 polynomial coefficients `a_dict`,
+the molecular weight `MW` and the heat of formation `Hf` for a given chemical species
+"""
 struct species
     a_dict
     MW::Float64
@@ -7,7 +11,14 @@ end
 """
 Reads a NASA 9 polynomial thermo definintion file which can be obtained from
 [NASA thermobuild](https://cearun.grc.nasa.gov/ThermoBuild/index_ds.html) 
-and returns a dictionary of species
+and returns a dictionary of species.
+
+Usage:
+If a NASA 9 polynomial definition file `thermo.inp` exists then,
+
+```spec = readThermo("thermo.inp")```
+
+will return a dictionary of species
 """
 function readThermo(filename)
 
