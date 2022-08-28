@@ -18,7 +18,9 @@ If a NASA 9 polynomial definition file `thermo.inp` exists then,
 
 ```spec = readThermo("thermo.inp")```
 
-will return a dictionary of species
+will return a dictionary of species.
+
+`readThermo` only considers 2 temperature ranges 200-1000 K and 1000-6000 K but more can be added if needed.
 """
 function readThermo(filename)
 
