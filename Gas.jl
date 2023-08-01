@@ -24,6 +24,34 @@ Air = gas(Y)
 
 
 ϵ = 1e-12
+
+"""
+Function to create the required temperature array
+"""
+function Tarray(T)
+   return [T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
+end
+
+# function Tarray2(T)
+#    TT = zeros(Float64, 8)
+#    TT[1:7] = [T^i for i in range(-2, stop=4)]
+#    TT[8] = log(T)
+#    return TT
+# end
+# function Tarray3(T)
+#    TT = zeros(Float64, 8)
+#    TT[1] = T^-2    #T^-2
+#    TT[2] = TT[1]*T #T^-1
+#    TT[3] = 1.0     #T^1
+#    TT[4] = T       #T^0
+#    TT[5] = T*T     #T^2
+#    TT[6] = T*TT[5] #T^3
+#    TT[7] = T*TT[6] #T^4
+#    TT[8] = log(float(T))
+#    return TT
+# end
+
+
 """
 Calculates cp of the given species in J/K/mol
 """
