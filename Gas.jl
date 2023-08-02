@@ -221,8 +221,8 @@ the entropy change due to pressure
 
 `sp` can be either of type `species` or `gas`
 """
-function s(T, P, sp)
-   Tref = 298.15
+function s(T, P, gas::Gas)
+   Pref = 101325 
    Pref = 101325
 
    Δs = 𝜙(T, sp) - 𝜙(Tref, sp) - ℜ*log(P/Pref)
