@@ -1,7 +1,7 @@
 using NLsolve
 using BenchmarkTools
 
-const ℜ = 8.3145 # J/K/mol
+const Runiv = 8.3145 # J/K/mol
 
 Y = Dict()
 Y = Dict(  
