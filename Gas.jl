@@ -13,8 +13,34 @@ Y = Dict(
 "O2"  => 0.209476)
 
 
-struct gas
+mutable struct Gas
+   T::Float64
+   Tarray::Array{Float64, 1} # Temperature array of gas
    Y # Mass fraction of species
+end
+# Convinence constructors:
+function Gas(T, Y)
+   Gas(T, Tarray(T), Y)
+end
+function Gas(Y)
+   Gas(298.0, Y)
+end
+function Gas()
+   Gas(298.0, Dict("Air"=>1.0))
+end
+
+# Automatically calculates the Tarray if T is set
+function Base.setproperty!(gas::Gas, s::Symbol, val)
+   if s === :T
+      setfield!(gas, :T, val) # first set T
+      setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
+   elseif s === :Y # directly set mass fractions Y
+      setfield!(gas, :Y, val) 
+   elseif s === :Tarray
+      setfield!(gas,:Tarray, val)
+      setfield!(gas, :T, val[4])
+   end
+
 end
 
 #Read species data from thermo.inp
