@@ -1,4 +1,5 @@
 using NLsolve
+using LinearAlgebra
 using BenchmarkTools
 
 const Runiv = 8.3145 # J/K/mol
