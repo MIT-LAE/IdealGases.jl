@@ -133,14 +133,14 @@ end
 Calculates h of the given **species** in J/mol
 Calcualted by:
 H0/RT = -a1*T^-2 + a2*T^-1*ln(T) + a3 + a4*T/2 + a5*T^2/3 + a6*T^3/4 + a7*T^4/5 + b1/T
-      = -a1*T₁   + a2*T₂*ln(T)  + a3 + a4*T₄/2 + a5*T₅/3  + a6*T₆/4  + a7*T₇/5  + b1*T₂
+      = -a1*T₁   + a2*T₂*T₈      + a3 + a4*T₄/2 + a5*T₅/3  + a6*T₆/4  + a7*T₇/5  + a₈*T₂
 """
 function h(TT, a)
     h_RT  = -a[1]*TT[1] + 
              a[2]*TT[8]*TT[2] + 
              a[3] + 
          0.5*a[4]*TT[4] + 
-             a[5]*TT[5]/3 + 
+             a[5]*TT[5]/3.0 + 
         0.25*a[6]*TT[6] + 
         0.20*a[7]*TT[7] + 
              a[8]*TT[2]
@@ -172,27 +172,42 @@ end
 
 """
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **species** in J/K/mol
+   S0/R = -a1*T^-2/2 - a2*T^-1 + a3*ln(T) + a4*T + a5*T^2/2 + a6*T^3/3.0 + a7*T^4/4 + b2 
+        = -a1*T₁/2   - a2*T₂   + a3*T₈    + a4*T₄+ a5*T₅/2  + a6*T₆/3.0  + a7*T₇/4  + a₉   
 """
-function 𝜙(T::Float64,sp::species)
-   if T<1000.0
-      a = sp.a_dict[200.0]
-   else
-      a = sp.a_dict[1000.0]
-   end
+function 𝜙(TT,a)
+    so_R = -0.5*a[1] * TT[1] - 
+                a[2] * TT[2] + 
+                a[3] * TT[8] + 
+                a[4] * TT[4] + 
+            0.5*a[5] * TT[5] +
+                a[6] * TT[6]/3.0 + 
+           0.25*a[7] * TT[7] + 
+                a[9]
 
-    so_R = -a[1]/2 * T^-2 - a[2]* T^-1 + a[3] * log(T) + a[4] * T + a[5]/2 * T^2 + a[6]/3 * T^3 + a[7]/4 * T^4 + a[9]
-    so = so_R*ℜ
+    so = so_R*Runiv
     return so #J/K/mol
 end
 """
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **mixture** in J/K/mol
 """
-function 𝜙(T, g::gas)
-   S = 0
-   for (key,val) in g.Y
-      S = S + val * 𝜙(T, spd[key])
+function 𝜙(T, g::Gas)
+   S = 0.0
+   g.T = T
+   if T<1000.0
+      s = :alow
+   else
+      s = :ahigh
+   end
+
+   for (key,Yᵢ) in g.Y
+      a = getfield(spd[key], s)
+      S = S + Yᵢ * 𝜙(g.Tarray, a)
    end
    return S
+end
+function 𝜙(g::Gas)
+   𝜙(g.T, g)
 end
 
 
