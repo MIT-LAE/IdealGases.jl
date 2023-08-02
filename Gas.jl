@@ -80,27 +80,35 @@ end
 
 """
 Calculates cp of the given species in J/K/mol
+(This is a completely non-allocating operation.)
 """
-function cp(T, sp::species)
-    Tarray = [T^i for i in range(-2, stop = 4)]
-    if T<1000.0
-      a = sp.a_dict[200.0]
-    else
-      a = sp.a_dict[1000.0]
-    end
-    Cp_R   = a[1:7]' * Tarray
-    Cp = Cp_R*ℜ
+@views function cp(Tarray, a)
+   #  Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
+    Cp_R = dot(a[1:7], Tarray[1:7])
+    Cp = Cp_R*Runiv
     return Cp #J/K/mol
 end
 """
 Calculates cp of a mixture specified by the mass fraction in `gas`
 """
-function cp(T, g::gas)
+@views function cp(T, g::Gas)
    Cp = 0
-   for (key,val) in g.Y
-      Cp = Cp + val * cp(T, spd[key])
+   g.T = T
+   if T<1000.0
+      s = :alow
+   else
+      s = :ahigh
+   end
+   
+   for (key,Yi) in g.Y
+      a = getfield(spd[key], s)
+      Cp = Cp + Yi * cp(g.Tarray[1:7], a[1:7])
    end
    return Cp
+end
+
+function cp(g::Gas)
+   cp(g.T, g)
 end
 
 """
