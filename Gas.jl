@@ -24,10 +24,10 @@ function Gas(T, Y)
    Gas(T, Tarray(T), Y)
 end
 function Gas(Y)
-   Gas(298.0, Y)
+   Gas(298.15, Y)
 end
 function Gas()
-   Gas(298.0, Dict("Air"=>1.0))
+   Gas(298.15, Dict("Air"=>1.0))
 end
 
 # Automatically calculates the Tarray if T is set
@@ -47,7 +47,7 @@ end
 #Read species data from thermo.inp
 spd = readThermo("thermo.inp")
 
-Air = gas(Y)
+Air = Gas()
 
 
 ϵ = 1e-12
@@ -92,7 +92,7 @@ end
 Calculates cp of a mixture specified by the mass fraction in `gas`
 """
 @views function cp(T, g::Gas)
-   Cp = 0
+   Cp = 0.0
    g.T = T
    if T<1000.0
       s = :alow
@@ -172,8 +172,10 @@ end
 
 """
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **species** in J/K/mol
-   S0/R = -a1*T^-2/2 - a2*T^-1 + a3*ln(T) + a4*T + a5*T^2/2 + a6*T^3/3.0 + a7*T^4/4 + b2 
-        = -a1*T₁/2   - a2*T₂   + a3*T₈    + a4*T₄+ a5*T₅/2  + a6*T₆/3.0  + a7*T₇/4  + a₉   
+This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
+
+S0/R = -a1*T^-2/2 - a2*T^-1 + a3*ln(T) + a4*T + a5*T^2/2 + a6*T^3/3.0 + a7*T^4/4 + b2 
+     = -a1*T₁/2   - a2*T₂   + a3*T₈    + a4*T₄+ a5*T₅/2  + a6*T₆/3.0  + a7*T₇/4  + a₉   
 """
 function 𝜙(TT,a)
     so_R = -0.5*a[1] * TT[1] - 
@@ -190,6 +192,7 @@ function 𝜙(TT,a)
 end
 """
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **mixture** in J/K/mol
+This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
 """
 function 𝜙(T, g::Gas)
    S = 0.0
@@ -212,21 +215,19 @@ end
 
 
 """
-Returns Δs from the reference point defined at
+Returns standard state sᵒ based on the reference point defined at
 Tref = 298.15 K
 Pref = 101325 Pa
 
 using the entropy complement function and
-the entropy change due to pressure
-
-`sp` can be either of type `species` or `gas`
+the entropy change due to pressure.
+Δs can then be defined as sᵒ - sᵒ(Tref, Pref) = sᴼ - 𝜙
 """
 function s(T, P, gas::Gas)
    Pref = 101325 
-   Pref = 101325
-
-   Δs = 𝜙(T, sp) - 𝜙(Tref, sp) - ℜ*log(P/Pref)
-
+   gas.T = T
+   sᵒ =  𝜙(gas) - Runiv*log(P/Pref)
+   return sᵒ
 end
 
 
