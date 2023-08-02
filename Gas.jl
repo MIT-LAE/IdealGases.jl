@@ -131,26 +131,43 @@ end
 
 """
 Calculates h of the given **species** in J/mol
+Calcualted by:
+H0/RT = -a1*T^-2 + a2*T^-1*ln(T) + a3 + a4*T/2 + a5*T^2/3 + a6*T^3/4 + a7*T^4/5 + b1/T
+      = -a1*T₁   + a2*T₂*ln(T)  + a3 + a4*T₄/2 + a5*T₅/3  + a6*T₆/4  + a7*T₇/5  + b1*T₂
 """
-function h(T, sp::species)
-   if T<1000.0
-      a = sp.a_dict[200.0]
-   else
-      a = sp.a_dict[1000.0]
-   end
-    h_R_T = -a[1] * T^-2 + a[2]*log(T) * T^-1 + a[3] * T^0 + a[4]/2 * T + a[5]/3 * T^2 + a[6]/4 * T^3 + a[7]/5 * T^4 + a[8]/T
-    h = h_R_T*T*ℜ
+function h(TT, a)
+    h_RT  = -a[1]*TT[1] + 
+             a[2]*TT[8]*TT[2] + 
+             a[3] + 
+         0.5*a[4]*TT[4] + 
+             a[5]*TT[5]/3 + 
+        0.25*a[6]*TT[6] + 
+        0.20*a[7]*TT[7] + 
+             a[8]*TT[2]
+
+    h = h_RT*TT[4]*Runiv
     return h #J/mol
 end
 """
 Calculates h of a given **mixture** in J/mol
 """
-function h(T, g::gas)
-   H = 0
-   for (key,val) in g.Y
-      H = H + val * h(T, spd[key])
+function h(T, g::Gas)
+   H = 0.0
+   g.T = T
+   if T<1000.0
+      s = :alow
+   else
+      s = :ahigh
+   end
+   
+   for (key,Yᵢ) in g.Y
+      a = getfield(spd[key], s)
+      H = H + Yᵢ * h(g.Tarray, a)
    end
    return H
+end
+function h(g::Gas)
+   h(g.T,g)
 end
 
 """
