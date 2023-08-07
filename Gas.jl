@@ -1,15 +1,26 @@
-using NLsolve
+# """
+# Real gas thermodynamics based on NASA polynomials
+# """
+# module RealGas
+
+# using NLsolve
 using LinearAlgebra
 using BenchmarkTools
 using StaticArrays
+using Printf
 
 include("readThermo.jl")
 
 const Runiv = 8.3145 # J/K/mol
 const Pstd = 101325.0 # Pa
 const Tstd = 298.15 # K
+const ϵ = 1e-12
 
+"""
+   Gas
 
+A type that represents a real gas
+"""
 mutable struct Gas
    P::Float64 # [Pa]
    T::Float64 # [K]
@@ -23,9 +34,6 @@ mutable struct Gas
 end
 
 # Convinence constructors:
-function Gas(T, Y)
-   Gas(T, Tarray(T), Y)
-end
 function Gas(Y)
    Gas(Pstd, Tstd, Tarray(Tstd), 0.0, 0.0, 0.0, Y, 28.965)
 end
@@ -45,6 +53,38 @@ function Gas()
 
 end
 
+# Overload Base.getproperty for convinence
+function Base.getproperty(gas::Gas, s::Symbol)
+   if s === :h_T
+      return getfield(gas, :cp)
+   elseif s === :s_T
+      return getfield(gas, :cp)/getfield(gas, :T)
+   elseif s === :hs
+      return [getfield(gas, :h), getfield(gas, :s)]
+   elseif s === :TP
+      return [getfield(gas, :T), getfield(gas, :P)]
+   else
+      return getfield(gas, s)
+   end
+end
+"""
+   show(io::IO, gas::Gas)
+
+Pretty print for Real gases
+"""
+function Base.show(io::IO, gas::Gas)
+   @printf(io, "Real Gas at\n%3s = %8.3f K\n%3s = %8.3f kPa\n%3s = %8.3f J/K/mol\n%3s = %8.3f kJ/mol\n%3s = %8.3f kJ/K/mol",
+     "T", gas.T, "P", gas.P/1000.0, "cp", gas.cp, "h", gas.h/1000.0, "s", gas.s/1000.0)
+   println("\n\nwith composition:")
+   @printf(io, "------------------\n")
+   @printf(io, "%8s  %8s\n", "Species", "Yᵢ")
+   @printf(io, "------------------\n")
+   for (name, Yi) in zip(spdict.name, gas.Y)
+      if Yi != 0
+         @printf(io, "%8s  %8.3f\n", name, Yi)
+      end
+   end
+end
 # Automatically calculates the Tarray if T is set
 function Base.setproperty!(gas::Gas, s::Symbol, val)
    if s === :T
@@ -123,14 +163,6 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
 
 end
 
-#Read species data from thermo.inp
-spd = readThermo("thermo.inp")
-
-Air = Gas()
-
-
-ϵ = 1e-12
-
 """
 Function to create the required temperature array
 """
@@ -144,6 +176,11 @@ end
 #    TT[8] = log(T)
 #    return TT
 # end
+
+"""
+In place Tarray update that returns
+[T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
+"""
 function Tarray!(T, TT)
    TT[1] = T^-2    #T^-2
    TT[2] = TT[1]*T #T^-1
@@ -161,51 +198,43 @@ end
 Calculates cp of the given species in J/K/mol
 (This is a completely non-allocating operation.)
 """
-@views function cp(Tarray, a)
+@views function Cp(Tarray, a)
    #  Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
     Cp_R = dot(a[1:7], Tarray[1:7])
     Cp = Cp_R*Runiv
     return Cp #J/K/mol
 end
 """
-Calculates cp of a mixture specified by the mass fraction in `gas`
+Calculates cp for a **species** type in J/K/mol.
 """
-@views function cp(T, g::Gas)
-   Cp = 0.0
-   g.T = T
+function Cp(T, sp::species)
+   TT = Tarray(T)
    if T<1000.0
       s = :alow
    else
       s = :ahigh
    end
-   
-   for (key,Yi) in g.Y
-      a = getfield(spd[key], s)
-      Cp = Cp + Yi * cp(g.Tarray[1:7], a[1:7])
-   end
-   return Cp
+   a = getfield(sp, s)
+   Cp(TT, a)
+end
+"""
+Calculates cp of a mixture specified by the mass fraction in `gas`
+"""
+@views function Cp(T, g::Gas)
+   g.T = T
+   return g.cp
 end
 
-function cp(g::Gas)
-   cp(g.T, g)
+function Cp(g::Gas)
+   Cp(g.T, g)
 end
 
 """
 Calculates mean molecular weight
 """
-function MW(g::gas)
-   MW = 0
-   for (key,val) in g.Y
-      MW = MW + val*spd[key].MW
-   end
-   return MW/1000
-end
-"""
-Calculates mean molecular weight
-"""
-function MW(g::species)
-   MW = g.MW
-   return MW/1000
+@views function MW(g::Gas)
+   MW = dot(g.Y, spdict.MW)
+   return MW
 end
 
 """
@@ -227,8 +256,24 @@ function h(TT, a)
     h = h_RT*TT[4]*Runiv
     return h #J/mol
 end
+
 """
-Calculates h of a given **mixture** in J/mol
+Calculates h for a species
+"""
+function h(T, sp::species)
+   TT = Tarray(T)
+   if T<1000.0
+      s = :alow
+   else
+      s = :ahigh
+   end
+   a = getfield(sp, s)
+   h(TT, a)
+end
+
+"""
+Calculates h of a given **mixture** in J/mol where species mass fractions \\math{Y_i} 
+is calculated from the supplied Gas instance
 """
 function h(T, g::Gas)
    H = 0.0
@@ -250,11 +295,12 @@ function h(g::Gas)
 end
 
 """
-Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **species** in J/K/mol
+Calculates the entropy complement function 𝜙=∫(cₚ/T)dT in J/K/mol
 This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
-
+```math
 S0/R = -a1*T^-2/2 - a2*T^-1 + a3*ln(T) + a4*T + a5*T^2/2 + a6*T^3/3.0 + a7*T^4/4 + b2 
      = -a1*T₁/2   - a2*T₂   + a3*T₈    + a4*T₄+ a5*T₅/2  + a6*T₆/3.0  + a7*T₇/4  + a₉   
+```
 """
 function 𝜙(TT,a)
     so_R = -0.5*a[1] * TT[1] - 
@@ -269,6 +315,7 @@ function 𝜙(TT,a)
     so = so_R*Runiv
     return so #J/K/mol
 end
+
 """
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **mixture** in J/K/mol
 This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
@@ -303,120 +350,135 @@ the entropy change due to pressure.
 Δs can then be defined as sᵒ - sᵒ(Tref, Pref) = sᴼ - 𝜙
 """
 function s(T, P, gas::Gas)
-   Pref = 101325 
+   Pref = 101325.0 
    gas.T = T
    sᵒ =  𝜙(gas) - Runiv*log(P/Pref)
    return sᵒ
 end
 
-
-
-# Specific functions for gas Compression
-PR = 10
-p2, T2 = 101325, 298.15
-ηp = 0.90
-
-""" 
-Adiabatic compression given the 
-compression pressure ratio (`PR`), the initial pressure (`p`)
-and initial temperature (`T`).
-
-Returns `Tfinal` and `pfinal`
 """
-function compress(PR, p, T)
-   Tfinal = T * PR^(ℜ/cp(T,Air))
-
-   for i in 1:10
-      Res  = (𝜙(Tfinal, Air) - 𝜙(T, Air))/ℜ - log(PR)
-      Res′ = cp(Tfinal,Air)/ℜ/Tfinal
-      dT  = Res/Res′
-      Tfinal = Tfinal - dT
-      # println(Tfinal)
-      if abs(dT) < ϵ
-         break
-      end
+Calculates s for a species
+"""
+function s(T, P, sp::species)
+   TT = Tarray(T)
+   Pref = 101325
+   if T<1000.0
+      s = :alow
+   else
+      s = :ahigh
    end
-
-   return Tfinal, p*PR
-
+   a = getfield(sp, s)
+   sᵒ = 𝜙(TT, a) - Runiv*log(P/Pref)
+   return sᵒ
 end
+
 """
-Adiabatic with NL solve
-i.e. find x such that F(x)=0
+Calculates gas temperature for a specified enthalpy
 """
-T = 298.15
-p = 101325.
-PR = 2.0
-function f(x)
-   s(T,p,Air) - s(x[1],p*PR,Air)
+function set_h!(hspec::Float64, gas::Gas)
+   T = gas.T
+   dT = T
+   while abs(dT) > ϵ
+      h = gas.h
+      res = h - hspec # Residual
+      res_t = gas.cp  # ∂R/∂T = ∂h/∂T = cp
+      dT = -res/res_t # Newton step
+      T = T + dT
+      gas.T = T
+   end
+   return gas
 end
+
+"""
+Calculates state of the gas given enthalpy and pressure (h,P)
+"""
+function set_hP!(hspec::Float64, P::Float64, gas::Gas)
+   set_h!(hspec, gas)
+   gas.P = P
+   return gas
+end
+
+
+# # Specific functions for gas Compression
+# PR = 10
+# p2, T2 = 101325, 298.15
+# ηp = 0.90
+
+# """ 
+# Adiabatic compression given the 
+# compression pressure ratio (`PR`), the initial pressure (`p`)
+# and initial temperature (`T`).
+
+# Returns `Tfinal` and `pfinal`
+# """
+# function compress(PR, p, T)
+#    Tfinal = T * PR^(ℜ/cp(T,Air))
+
+#    for i in 1:10
+#       Res  = (𝜙(Tfinal, Air) - 𝜙(T, Air))/ℜ - log(PR)
+#       Res′ = cp(Tfinal,Air)/ℜ/Tfinal
+#       dT  = Res/Res′
+#       Tfinal = Tfinal - dT
+#       # println(Tfinal)
+#       if abs(dT) < ϵ
+#          break
+#       end
+#    end
+
+#    return Tfinal, p*PR
+
+# end
+# """
+# Adiabatic with NL solve
+# i.e. find x such that F(x)=0
+# """
+# T = 298.15
+# p = 101325.
+# PR = 2.0
+# function f(x)
+#    s(T,p,Air) - s(x[1],p*PR,Air)
+# end
 
 """
 Compression with polytropic efficiency
 """
-function compress(PR, p, T, ηp )
-   Tfinal = T * PR^(ℜ/cp(T,Air)/ηp)
+function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
-   for i in 1:25
-      Res  = (𝜙(Tfinal, Air) - 𝜙(T, Air))/ℜ - log(PR)/ηp
-      Res′ = cp(Tfinal,Air)/ℜ/Tfinal
-      dT  = Res/Res′
-      
-      # ω = 1.0
-      # if i>10
-      #    ω = 0.5
-      # end
-      # Tfinal = Tfinal - ω*dT
-      Tfinal = Tfinal - dT
+   T0 = gas.T
+   s0 = gas.s
+   P0 = gas.P
+
+   Tfinal = T0 * PR^(Runiv/gas.cp/ηp)
+   Pfinal = P0*PR
+   dT = Tfinal
+   gas.P = Pfinal
+   gas.T = Tfinal
+   
+   while abs(dT)>ϵ
+      ## Original approach by M. Drela using entropy complement
+      # res  = (𝜙(Tfinal, Air) - s)/Runiv - log(PR)/ηp
+      # res_dT = cp(Tfinal,Air)/Runiv/Tfinal
+      ## Modified approach using pressure dependent entropy
+      res  = (gas.s - s0)/Runiv + (log(PR) - log(PR)/ηp)
+      res_dT = gas.s_T/Runiv
+      dT  = - res/res_dT
+
+      Tfinal = Tfinal + dT
+      gas.T = Tfinal
       # println("$i: $Tfinal $dT")
-      if abs(dT) < ϵ
-         break
-      end
    end
 
-   return Tfinal, p*PR
+   return gas
 
 end
 
-using PyCall
-pygui()
-using PyPlot
-pygui(true)
-plt.style.use(["~/prash.mplstyle", "seaborn-colorblind"])
+Y = Dict(  
+"N2"  => 0.78084,
+"Ar"  => 0.009365,
+"Air" => 0.0,
+"H2O" => 0.0,
+"CO2" => 0.000319,
+"O2"  => 0.209476)
 
-function plot_polycomp()
-   p2 = 101.325e3
-   T2 = 288.15
-   fig, ax = plt.subplots(figsize = (8,5), dpi = 200)
-   PR = LinRange(20,50,10)
-   for eff in [0.85, 0.90, 0.91, 0.95]
-      T = [T for (T,p) in compress.(PR, p2, T2, eff)]
-      l, = ax.plot(PR, T); label = "\$ \\eta_p = $(eff*100)\$%"
-      ax.text(PR[end], T[end], label, color = l.get_color())
-   end
-   
-   model_point = ax.scatter(32.64, 827.25,label = "MIT CFM56-5B NPSS model",
-   color = "k", marker="*", s=80, zorder=10.1)
+gas = Gas()
 
-   GA_model = ax.scatter(28.6, 798.2, label = "GT CFM56-7B model", color = "k",
-                      marker = ".", s = 50, zorder = 10.1)
-   
-   Engs = ["CFM56-7B27","CFM56-5B3", "LEAP-1B28", "PW1133G"]
-   PR = [29.0,32.6, 42.0, 38.67]
-   annotate_props = Dict("xycoords"=>("data", "axes fraction"), 
-                      "arrowprops"=>Dict("arrowstyle"=>"->","connectionstyle"=>"arc3"), 
-                      "ha"=>"center", "va" => "center","fontsize" => 8)
-                     #  "bbox"=Dict("fc"=>"w", "ec"=>"none")
-
-   # for (pr,eng) in zip(PR, Engs)
-   #    ax.annotate(eng, xy=(pr,0), xytext=(pr,0.08),  zorder = 10)
-   #    ax.axvline(pr, color = "k", lw = 1.0, alpha = 0.3, ls = "--", zorder = 9)
-   # end
-   ax.legend()
-   ax.set_ylim(691.2326281862709, 1091.441513548923)
-
-   ax.set_xlabel("\$\\pi_{\\mathrm{oo}}\$")
-   ax.set_ylabel("T\$_{t3}\$[K]")
-   ax.set_title("\$T_{t3}\$ vs \$\\pi_{oo}\$ at SLS conditions (\$T_{amb}\$ = 288.15 K)")
-   plt.tight_layout()
-end
