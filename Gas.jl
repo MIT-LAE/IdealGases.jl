@@ -1,33 +1,48 @@
 using NLsolve
 using LinearAlgebra
 using BenchmarkTools
+using StaticArrays
+
+include("readThermo.jl")
 
 const Runiv = 8.3145 # J/K/mol
-
-Y = Dict()
-Y = Dict(  
-"N2"  => 0.78084,
-"Ar"  => 0.009365,
-"Air" => 0.0,
-"H2O" => 0.0,
-"CO2" => 0.000319,
-"O2"  => 0.209476)
+const Pstd = 101325.0 # Pa
+const Tstd = 298.15 # K
 
 
 mutable struct Gas
-   T::Float64
-   Tarray::Array{Float64, 1} # Temperature array of gas
-   Y # Mass fraction of species
+   P::Float64 # [Pa]
+   T::Float64 # [K]
+   Tarray::MVector{8, Float64} # Temperature array to make calcs allocation free
+
+   cp::Float64 #[J/mol/K]
+   h::Float64  #[J/mol]
+   s::Float64  #[J/mol/K]
+   Y::MVector{length(spdict), Float64} # Mass fraction of species
+   MW::Float64 # Molecular weight [g/mol]
 end
+
 # Convinence constructors:
 function Gas(T, Y)
    Gas(T, Tarray(T), Y)
 end
 function Gas(Y)
-   Gas(298.15, Y)
+   Gas(Pstd, Tstd, Tarray(Tstd), 0.0, 0.0, 0.0, Y, 28.965)
 end
+
+"""
+Constructor that returns a `Gas` type representing 
+Air at standard conditions
+"""
 function Gas()
-   Gas(298.15, Dict("Air"=>1.0))
+   Air = spdict[findfirst(x->x=="Air", spdict.name)]
+
+   Gas(Pstd, Tstd, Tarray(Tstd),
+    Cp(Tstd, Air), 
+    h(Tstd, Air),
+    s(Tstd, Pstd, Air),
+   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0], Air.MW)
+
 end
 
 # Automatically calculates the Tarray if T is set
@@ -35,12 +50,76 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
    if s === :T
       setfield!(gas, :T, val) # first set T
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
+      TT = getfield(gas, :Tarray) # Just convinence
+      # Next set the cp, h and s of the gas
+      ## Get the right coefficients (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
+      if val<1000.0
+         A = view(spdict.alow, :)
+      else
+         A = view(spdict.ahigh, :)
+      end   
+      ## Initialize temporary vars
+      cptemp = 0.0
+      htemp  = 0.0
+      stemp  = 0.0
+      
+      P = getfield(gas, :P)
+      Y = getfield(gas, :Y)
+      # Go through every species where mass fraction is not zero
+      @views for (Yᵢ,a) in zip(Y, A)
+         if Yᵢ != 0.0
+            cptemp = cptemp + Yᵢ * Cp(TT, a)
+             htemp = htemp  + Yᵢ * h(TT, a)
+             stemp = stemp  + Yᵢ * (𝜙(TT, a) - Runiv*log(P/Pstd))
+         end
+      end
+   
+      setfield!(gas, :cp, cptemp)
+      setfield!(gas, :h, htemp)
+      setfield!(gas, :s, stemp)
+
+   elseif s === :P
+      setfield!(gas, :P, val)
+      TT = view(getfield(gas, :Tarray), :) # Just convinence
+      # Next set s of the gas
+      ## Get the right coefficients (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
+      if val<1000.0
+         A = view(spdict.alow, :)
+      else
+         A = view(spdict.ahigh, :)
+      end   
+      ## Initialize temporary vars
+      stemp  = 0.0
+      
+      P = val
+      Y = view(getfield(gas, :Y), :)
+      # Go through every species where mass fraction is not zero
+      @views for (Yᵢ,a) in zip(Y, A)
+         if Yᵢ != 0.0
+            stemp = stemp  + Yᵢ * (𝜙(TT, a) - Runiv*log(P/Pstd))
+         end
+      end
+
+      setfield!(gas, :s, stemp)
+
    elseif s === :Y # directly set mass fractions Y
-      setfield!(gas, :Y, val) 
-   elseif s === :Tarray
-      setfield!(gas,:Tarray, val)
-      setfield!(gas, :T, val[4])
+      if typeof(val) === Array{Float64, 1}
+         # If array directly store in Y
+         setfield!(gas, :Y, val) 
+      elseif typeof(val) <: Dict
+         # If dict provided set each species in the right order
+         names = spdict.name
+         Y = zeros(MVector{length(names)})
+         for (key,value) in val
+            index = findfirst(x->x==key, names)
+            Y[index] = value
+         end
+         setfield!(gas, :Y, Y)
+      end
+      # Update the MW of the gas mixture
+      setfield!(gas, :MW, MW(gas))
    end
+   # Note: intentionally not including other variables to prevent users from trying to directly set h, s, cp, MW etc.
 
 end
 
