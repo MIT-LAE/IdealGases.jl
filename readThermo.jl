@@ -1,3 +1,4 @@
+using StructArrays
 """
 species is a structure that holds the NASA 9 polynomial coefficients `alow` and `ahigh` 
 for the two temprature regions separated by `Tmid` 
@@ -7,6 +8,7 @@ the molecular weight `MW` and the heat of formation `Hf` (J/mol) for a given che
 See https://shepherd.caltech.edu/EDL/PublicResources/sdt/formats/nasa.html for typical data format
 """
 struct species
+    name::String
     Tmid::Float64
     alow::Array{Float64, 1}
     ahigh::Array{Float64, 1}
@@ -41,8 +43,8 @@ function readThermo(filename)
     
     # Count number of species names and lines
     sp_names, sp_lines = zip([[strip(i[1:13]),n] for (n,i) in enumerate(input) if startswith(i, r"[a-zA-Z]\w[^END][^thermo]") ]...)
-    Species = Dict()
     Nspecies = length(sp_names)
+    Species = Array{species}(undef, Nspecies)
 
     a = zeros((2, 9)) #Assume just 2 temp intervals for now
     for (i, sp) in enumerate(sp_names)
@@ -50,17 +52,21 @@ function readThermo(filename)
         MW = parse(Float64, strip(input[istart+1][53:65]))
         Hf = parse(Float64, strip(input[istart+1][66:80]))
         Tmid = parse(Float64, strip(input[istart+2][12:22]))
-        # Create array to store sp_names
-
         
+        if Tmid!=1000.0
+            error("Tmid is not 1000.0")
+        end
+   
         coeffs = replace(input[istart+3], "D"=>"e")*replace(input[istart+4], "D"=>"e")
         a[1,:]  = parse.(Float64, [coeffs[(i-1)*16+1:i*16] for i in range(1,10, step = 1) if i != 8])
 
         coeffs = replace(input[istart+6], "D"=>"e")*replace(input[istart+7], "D"=>"e")
         a[2,:]  = parse.(Float64, [coeffs[(i-1)*16+1:i*16] for i in range(1,10, step = 1) if i != 8])
 
-        Species[sp] = species(Tmid, a[1,:], a[2,:], MW, Hf)
+        Species[i] = species(sp,Tmid, a[1,:], a[2,:], MW, Hf)
     end
-    return Species
+    return StructArray(Species)
 end
 
+#Read species data from thermo.inp
+const spdict = readThermo("thermo.inp")
