@@ -1,7 +1,7 @@
 # """
-# Real gas thermodynamics based on NASA polynomials
+# Thermally-perfect gas thermodynamics based on NASA polynomials
 # """
-# module RealGas
+# module IdealGas
 
 # using NLsolve
 using LinearAlgebra
@@ -19,7 +19,7 @@ const ϵ = 1e-12
 """
    Gas
 
-A type that represents a real gas
+A type that represents an ideal gas that is callorically perfect gas
 """
 mutable struct Gas
    P::Float64 # [Pa]
@@ -73,18 +73,22 @@ end
 Pretty print for Real gases
 """
 function Base.show(io::IO, gas::Gas)
-   @printf(io, "Real Gas at\n%3s = %8.3f K\n%3s = %8.3f kPa\n%3s = %8.3f J/K/mol\n%3s = %8.3f kJ/mol\n%3s = %8.3f kJ/K/mol",
+   @printf(io, "Ideal Gas at\n%3s = %8.3f K\n%3s = %8.3f kPa\n%3s = %8.3f J/K/mol\n%3s = %8.3f kJ/mol\n%3s = %8.3f kJ/K/mol",
      "T", gas.T, "P", gas.P/1000.0, "cp", gas.cp, "h", gas.h/1000.0, "s", gas.s/1000.0)
    println("\n\nwith composition:")
-   @printf(io, "------------------\n")
-   @printf(io, "%8s  %8s\n", "Species", "Yᵢ")
-   @printf(io, "------------------\n")
-   for (name, Yi) in zip(spdict.name, gas.Y)
+   divider = "-"^(8*2+4+9)
+   @printf(io, "%s\n", divider)
+   @printf(io, "%8s  %8s  %9s\n", "Species", "Yᵢ", "MW[g/mol]")
+   @printf(io, "%s\n", divider)
+   for (name, Yi, mw) in zip(spdict.name, gas.Y, spdict.MW)
       if Yi != 0
-         @printf(io, "%8s  %8.3f\n", name, Yi)
+         @printf(io, "%8s  %8.3f  %9.3f\n", name, Yi, mw)
       end
    end
+   @printf(io, "%s\n", divider)
+   @printf(io, "%8s  %8.3f  %9.3f\n", " ", sum(gas.Y), gas.MW)
 end
+
 # Automatically calculates the Tarray if T is set
 function Base.setproperty!(gas::Gas, s::Symbol, val)
    if s === :T
