@@ -56,9 +56,9 @@ function reaction_change_fraction(fuel::String)
     nN2  = CHON[4]/2
     nH2O = CHON[2]/2
     nO2  = - (CHON[1] + CHON[2]/4 - CHON[3]/2) # Oxygen is used up/ lost
-    ΔY = [nCO2,   nN2,  nH2O,  nO2]
-    # ΔY = [M_CO2, M_N2, M_H2O, M_O2] .* 
-    #      [nCO2,   nN2,  nH2O,  nO2] ./ Mfuel
+
+    ΔY = [M_CO2, M_N2, M_H2O, M_O2] .* 
+         [nCO2,   nN2,  nH2O,  nO2] ./ Mfuel
 
     # return as dict to make it easier to set Gas mass fractions
     names = ["CO2", "N2", "H2O", "O2"]
