@@ -98,7 +98,11 @@ function composition(gas::Gas, io::IO=stdout)
    @printf(io, "%8s  %8.3f  %9.3f\n", "ΣYᵢ", sum(gas.Y), gas.MW)
 end
 
-# Automatically calculates the Tarray if T is set
+
+"""
+    Base.setproperty!(gas::Gas, s::Symbol, val)
+
+"""
 function Base.setproperty!(gas::Gas, s::Symbol, val)
    if s === :T
       setfield!(gas, :T, val) # first set T
