@@ -457,6 +457,8 @@ end
 # end
 
 """
+    compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
+
 Compression with polytropic efficiency
 """
 function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
@@ -487,6 +489,26 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
    return gas
 
+end
+
+"""
+    thermo_table(gas::Gas, Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
+
+Quickly generate a table of cp, h and s for a gas
+"""
+function thermo_table(gas::Gas, Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
+   Trange = range(Tstart, Tend, step=Tinterval)
+   composition(gas)
+   println(" ")
+   divider = "-"^(4+8+12*3+4)
+   @printf("%4s %8s %12s %12s %12s\n",
+          "i",  "T[K]", "cp[J/K/mol]", "h[kJ/mol]", "s[kJ/K/mol]")
+   println(divider)
+   for (i,T) in enumerate(Trange)
+      gas.T = T
+      @printf("%4d %8.2f %12.4f %12.4f %12.4f\n",
+      i,  gas.T, gas.cp, gas.h/1000.0, gas.s/1000.0)
+   end
 end
 
 Y = Dict(  
