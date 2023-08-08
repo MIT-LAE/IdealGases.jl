@@ -19,7 +19,7 @@ const ϵ = 1e-12
 """
    Gas
 
-A type that represents an ideal gas that is callorically perfect gas
+A type that represents an ideal gas that is calorically perfect 
 """
 mutable struct Gas
    P::Float64 # [Pa]
