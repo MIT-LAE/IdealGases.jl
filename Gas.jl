@@ -442,7 +442,37 @@ function set_hP!(gas::Gas, hspec::Float64, P::Float64)
    gas.P = P
    return gas
 end
+"""
+    set_TP!(gas::Gas, T::Float64, P::Float64)
 
+Calculates state of the gas given Temperature and pressure (T,P)
+in K and Pa respectively.
+
+# Examples
+```julia-repl
+julia> IG.set_TP!(gas, 298.15*2, 101325.0*2)
+Ideal Gas at
+  T =  596.300 K
+  P =  202.650 kPa
+ cp =   30.418 J/K/mol
+  h =    8.706 kJ/mol
+  s =    0.214 kJ/K/mol
+
+with composition:
+-----------------------------
+ Species        Yᵢ  MW[g/mol]
+-----------------------------
+     Air     1.000     28.965
+-----------------------------
+     ΣYᵢ     1.000     28.965
+```
+
+"""
+function set_TP!(gas::Gas, T::Float64, P::Float64)
+   gas.T = T
+   gas.P = P
+   return gas
+end
 
 # # Specific functions for gas Compression
 # PR = 10
