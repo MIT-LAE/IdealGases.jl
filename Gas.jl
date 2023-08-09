@@ -133,7 +133,8 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
       TT = getfield(gas, :Tarray) # Just convinence
       # Next set the cp, h and s of the gas
-      ## Get the right coefficients (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
+      ## Get the right coefficients 
+      ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
       if val<1000.0
          A = view(spdict.alow, :)
       else
@@ -163,7 +164,8 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       setfield!(gas, :P, val)
       TT = view(getfield(gas, :Tarray), :) # Just convinence
       # Next set s of the gas
-      ## Get the right coefficients (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
+      ## Get the right coefficients 
+      ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
       if val<1000.0
          A = view(spdict.alow, :)
       else
@@ -203,7 +205,8 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       # Update the MW of the gas mixture
       setfield!(gas, :MW, MW(gas))
    end
-   # Note: intentionally not including other variables to prevent users from trying to directly set h, s, cp, MW etc.
+   # Note: intentionally not including other variables to prevent 
+   # users from trying to directly set h, s, cp, MW etc.
 
 end
 
@@ -291,7 +294,7 @@ function h(TT, a)
         0.20*a[7]*TT[7] + 
              a[8]*TT[2]
 
-    h = h_RT*TT[4]*Runiv
+    h = h_RT*TT[4]*Runiv #TT[4] == T
     return h #J/mol
 end
 
@@ -310,8 +313,10 @@ function h(T, sp::species)
 end
 
 """
-Calculates h of a given **mixture** in J/mol where species mass fractions \\math{Y_i} 
-is calculated from the supplied Gas instance
+    h(T, g::Gas)
+
+Calculates h of a given **mixture** in J/mol where species 
+mass fractions \math{Y_i} is calculated from the supplied Gas instance
 """
 function h(T, g::Gas)
    H = 0.0
@@ -333,6 +338,8 @@ function h(g::Gas)
 end
 
 """
+    𝜙(TT,a)
+
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT in J/K/mol
 This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
 ```math
@@ -355,7 +362,10 @@ function 𝜙(TT,a)
 end
 
 """
-Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the given **mixture** in J/K/mol
+    𝜙(T, g::Gas)
+
+Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the 
+given **mixture** in J/K/mol
 This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
 """
 function 𝜙(T, g::Gas)
@@ -379,6 +389,8 @@ end
 
 
 """
+    s(T, P, gas::Gas)
+
 Returns standard state sᵒ based on the reference point defined at
 Tref = 298.15 K
 Pref = 101325 Pa
@@ -512,7 +524,8 @@ end
 
 Quickly generate a table of cp, h and s for a gas
 """
-function thermo_table(gas::Gas, Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
+function thermo_table(gas::Gas, 
+   Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
    Trange = range(Tstart, Tend, step=Tinterval)
    composition(gas)
    println(" ")
