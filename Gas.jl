@@ -11,6 +11,7 @@ using Printf
 
 include("constants.jl")
 include("readThermo.jl")
+include("combustion.jl")
 
 """
     Gas
