@@ -222,6 +222,8 @@ end
 
 
 """
+    Tarray!(T, TT)
+
 In place Tarray update that returns
 [T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
 """
@@ -236,7 +238,6 @@ function Tarray!(T, TT)
    TT[8] = log(float(T))
    return TT
 end
-
 
 """
 Calculates cp of the given species in J/K/mol
@@ -260,17 +261,6 @@ function Cp(T, sp::species)
    end
    a = getfield(sp, s)
    Cp(TT, a)
-end
-"""
-Calculates cp of a mixture specified by the mass fraction in `gas`
-"""
-@views function Cp(T, g::Gas)
-   g.T = T
-   return g.cp
-end
-
-function Cp(g::Gas)
-   Cp(g.T, g)
 end
 
 """
@@ -316,31 +306,6 @@ function h(T, sp::species)
 end
 
 """
-    h(T, g::Gas)
-
-Calculates h of a given **mixture** in J/mol where species 
-mass fractions \math{Y_i} is calculated from the supplied Gas instance
-"""
-function h(T, g::Gas)
-   H = 0.0
-   g.T = T
-   if T<1000.0
-      s = :alow
-   else
-      s = :ahigh
-   end
-   
-   for (key,Yᵢ) in g.Y
-      a = getfield(spd[key], s)
-      H = H + Yᵢ * h(g.Tarray, a)
-   end
-   return H
-end
-function h(g::Gas)
-   h(g.T,g)
-end
-
-"""
     𝜙(TT,a)
 
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT in J/K/mol
@@ -371,45 +336,23 @@ Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the
 given **mixture** in J/K/mol
 This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
 """
-function 𝜙(T, g::Gas)
-   S = 0.0
-   g.T = T
-   if T<1000.0
-      s = :alow
-   else
-      s = :ahigh
-   end
-
-   for (key,Yᵢ) in g.Y
-      a = getfield(spd[key], s)
-      S = S + Yᵢ * 𝜙(g.Tarray, a)
-   end
-   return S
-end
 function 𝜙(g::Gas)
-   𝜙(g.T, g)
-end
+   ϕ = 0.0
+   if T<1000.0
+      A = view(spdict.alow, :)
+   else
+      A = view(spdict.ahigh, :)
+   end
 
-
-"""
-    s(T, P, gas::Gas)
-
-Returns standard state sᵒ based on the reference point defined at
-Tref = 298.15 K
-Pref = 101325 Pa
-
-using the entropy complement function and
-the entropy change due to pressure.
-Δs can then be defined as sᵒ - sᵒ(Tref, Pref) = sᴼ - 𝜙
-"""
-function s(T, P, gas::Gas)
-   Pref = 101325.0 
-   gas.T = T
-   sᵒ =  𝜙(gas) - Runiv*log(P/Pref)
-   return sᵒ
+   for (Yᵢ, a) in zip(g.Y, A)
+      ϕ = ϕ + Yᵢ * 𝜙(g.Tarray, a)
+   end
+   return ϕ
 end
 
 """
+    s(T, P, sp::species)
+
 Calculates s for a species
 """
 function s(T, P, sp::species)
