@@ -182,7 +182,10 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       end
 
       setfield!(gas, :s, stemp)
-
+   elseif s ===:h
+      set_h!(gas, val)
+   elseif s === :TP
+      set_TP!(gas, val[1], val[2])
    elseif s === :Y # directly set mass fractions Y
       if typeof(val) === Array{Float64, 1}
          # If array directly store in Y
