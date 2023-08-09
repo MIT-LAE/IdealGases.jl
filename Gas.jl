@@ -338,7 +338,7 @@ This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
 """
 function 𝜙(g::Gas)
    ϕ = 0.0
-   if T<1000.0
+   if gas.T<1000.0
       A = view(spdict.alow, :)
    else
       A = view(spdict.ahigh, :)
