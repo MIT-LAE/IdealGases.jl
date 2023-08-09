@@ -88,6 +88,8 @@ function Base.getproperty(gas::Gas, s::Symbol)
       return [getfield(gas, :h), getfield(gas, :s)]
    elseif s === :TP
       return [getfield(gas, :T), getfield(gas, :P)]
+   elseif s === :𝜙
+      return 𝜙(gas)
    else
       return getfield(gas, s)
    end
