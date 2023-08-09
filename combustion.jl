@@ -39,6 +39,16 @@ Returns the mass fraction change due to complete combustion
 Assume fuel of type  CᵢHⱼOₖNₗ , then
 CᵢHⱼOₖNₗ + n(O2) * O2 ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2
 ⟹ CᵢHⱼOₖNₗ           ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2 - n(O2) * O2 
+
+# Examples
+```julia-repl
+julia> reaction_change_fraction("CH4")
+Dict{String, Float64} with 4 entries:
+  "O2"  => -3.98926
+  "H2O" => 2.24595
+  "CO2" => 2.74331
+  "N2"  => 0.0
+```
 """
 function reaction_change_fraction(fuel::String)
     CHON = fuelbreakdown(fuel) # Returns number of C, H, O, and N atoms in fuel
