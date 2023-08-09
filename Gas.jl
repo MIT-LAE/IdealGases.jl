@@ -9,15 +9,11 @@ using BenchmarkTools
 using StaticArrays
 using Printf
 
+include("constants.jl")
 include("readThermo.jl")
 
-const Runiv = 8.3145 # J/K/mol
-const Pstd = 101325.0 # Pa
-const Tstd = 298.15 # K
-const ϵ = 1e-12
-
 """
-   Gas
+    Gas
 
 A type that represents an ideal gas that is calorically perfect 
 """
@@ -33,14 +29,42 @@ mutable struct Gas
    MW::Float64 # Molecular weight [g/mol]
 end
 
-# Convinence constructors:
+"""
+    Gas(Y)
+
+Constructs `Gas` with given composition `Y`
+
+"""
 function Gas(Y)
    Gas(Pstd, Tstd, Tarray(Tstd), 0.0, 0.0, 0.0, Y, 28.965)
 end
 
 """
+    Gas()
+
 Constructor that returns a `Gas` type representing 
 Air at standard conditions
+
+See also [`Gas`](@ref).
+
+# Examples
+```julia-repl
+julia> Gas()
+Ideal Gas at
+  T =  298.150 K
+  P =  101.325 kPa
+ cp =   29.102 J/K/mol
+  h =   -0.126 kJ/mol
+  s =    0.199 kJ/K/mol
+
+with composition:
+-----------------------------
+ Species        Yᵢ  MW[g/mol]
+-----------------------------
+     Air     1.000     28.965
+-----------------------------
+     ΣYᵢ     1.000     28.965
+```
 """
 function Gas()
    Air = spdict[findfirst(x->x=="Air", spdict.name)]
