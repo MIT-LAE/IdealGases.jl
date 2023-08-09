@@ -211,12 +211,6 @@ function Tarray(T)
    return [T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
 end
 
-# function Tarray2(T)
-#    TT = zeros(Float64, 8)
-#    TT[1:7] = [T^i for i in range(-2, stop=4)]
-#    TT[8] = log(T)
-#    return TT
-# end
 
 """
 In place Tarray update that returns
