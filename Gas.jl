@@ -468,45 +468,6 @@ function set_TP!(gas::Gas, T::Float64, P::Float64)
    return gas
 end
 
-# # Specific functions for gas Compression
-# PR = 10
-# p2, T2 = 101325, 298.15
-# ηp = 0.90
-
-# """ 
-# Adiabatic compression given the 
-# compression pressure ratio (`PR`), the initial pressure (`p`)
-# and initial temperature (`T`).
-
-# Returns `Tfinal` and `pfinal`
-# """
-# function compress(PR, p, T)
-#    Tfinal = T * PR^(ℜ/cp(T,Air))
-
-#    for i in 1:10
-#       Res  = (𝜙(Tfinal, Air) - 𝜙(T, Air))/ℜ - log(PR)
-#       Res′ = cp(Tfinal,Air)/ℜ/Tfinal
-#       dT  = Res/Res′
-#       Tfinal = Tfinal - dT
-#       # println(Tfinal)
-#       if abs(dT) < ϵ
-#          break
-#       end
-#    end
-
-#    return Tfinal, p*PR
-
-# end
-# """
-# Adiabatic with NL solve
-# i.e. find x such that F(x)=0
-# """
-# T = 298.15
-# p = 101325.
-# PR = 2.0
-# function f(x)
-#    s(T,p,Air) - s(x[1],p*PR,Air)
-# end
 
 """
     compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
