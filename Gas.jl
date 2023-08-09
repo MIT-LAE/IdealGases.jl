@@ -390,9 +390,11 @@ function s(T, P, sp::species)
 end
 
 """
+    set_h!(gas::Gas, hspec::Float64)
+
 Calculates gas temperature for a specified enthalpy
 """
-function set_h!(hspec::Float64, gas::Gas)
+function set_h!(gas::Gas, hspec::Float64)
    T = gas.T
    dT = T
    while abs(dT) > ϵ
@@ -407,10 +409,12 @@ function set_h!(hspec::Float64, gas::Gas)
 end
 
 """
+    set_hP!(gas::Gas, hspec::Float64, P::Float64)
+
 Calculates state of the gas given enthalpy and pressure (h,P)
 """
-function set_hP!(hspec::Float64, P::Float64, gas::Gas)
-   set_h!(hspec, gas)
+function set_hP!(gas::Gas, hspec::Float64, P::Float64)
+   set_h!(gas,hspec)
    gas.P = P
    return gas
 end
