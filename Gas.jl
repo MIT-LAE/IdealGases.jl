@@ -377,8 +377,7 @@ function set_h!(gas::Gas, hspec::Float64)
    T = gas.T
    dT = T
    while abs(dT) > ϵ
-      h = gas.h
-      res = h - hspec # Residual
+      res = gas.h - hspec # Residual
       res_t = gas.cp  # ∂R/∂T = ∂h/∂T = cp
       dT = -res/res_t # Newton step
       T = T + dT
