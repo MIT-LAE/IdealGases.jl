@@ -291,7 +291,7 @@ function h(TT, a)
         0.20*a[7]*TT[7] + 
              a[8]*TT[2]
 
-    h = h_RT*TT[4]*Runiv #TT[4] == T
+    h = h_RT*TT[4]*Runiv # because TT[4] == T
     return h #J/mol
 end
 
@@ -334,7 +334,7 @@ function 𝜙(TT,a)
 end
 
 """
-    𝜙(T, g::Gas)
+    𝜙(g::Gas)
 
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the 
 given **mixture** in J/K/mol
@@ -376,6 +376,26 @@ end
     set_h!(gas::Gas, hspec::Float64)
 
 Calculates gas temperature for a specified enthalpy
+
+# Examples
+```julia-repl
+julia> gas = Gas();
+julia> set_h!(gas, 0.0)
+Ideal Gas at
+  T =  302.463 K
+  P =  101.325 kPa
+ cp =   29.108 J/K/mol
+  h =    0.000 kJ/mol
+  s =    0.199 kJ/K/mol
+
+with composition:
+-----------------------------
+ Species        Yᵢ  MW[g/mol]
+-----------------------------
+     Air     1.000     28.965
+-----------------------------
+     ΣYᵢ     1.000     28.965
+```
 """
 function set_h!(gas::Gas, hspec::Float64)
    T = gas.T
@@ -389,7 +409,28 @@ function set_h!(gas::Gas, hspec::Float64)
    end
    return gas
 end
+"""
+    set_Δh!(gas::Gas, Δhspec::Float64)
 
+Sets the gas temperature based on a specified change in enthalpy (Δh) [J/mol]
+"""
+function set_Δh!(gas::Gas, Δhspec::Float64)
+   hf = gas.h + Δh
+   set_h!(gas, hf)
+   ## Could also be implemented as this but... why?
+   # h0 = gas.h
+   # T = gas.T + Δhspec/gas.cp
+   # gas.T = T
+   # dT = T
+   # while abs(dT) > ϵ
+   #    res = (gas.h - h0) - Δhspec
+   #    res_t = gas.cp
+   #    dT = -res/res_t
+   #    T = T + dT
+   #    gas.T = T
+   # end
+   return gas
+end
 """
     set_hP!(gas::Gas, hspec::Float64, P::Float64)
 
@@ -408,7 +449,8 @@ in K and Pa respectively.
 
 # Examples
 ```julia-repl
-julia> IG.set_TP!(gas, 298.15*2, 101325.0*2)
+julia> gas = Gas(); # Create an ideal gas consisting of air at std. conditions
+julia> set_TP!(gas, 298.15*2, 101325.0*2)
 Ideal Gas at
   T =  596.300 K
   P =  202.650 kPa
