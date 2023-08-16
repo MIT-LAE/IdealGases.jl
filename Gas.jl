@@ -94,6 +94,10 @@ function Base.getproperty(gas::Gas, s::Symbol)
       return getfield(gas, s)
    end
 end
+
+function Base.show(io::IO, gas::Gas)
+   print(io, "Gas(T = $(gas.T) K; P = $(gas.P/1000.0) kPa; MW = $(gas.MW) g/mol)")
+end
 """
    show(io::IO, gas::Gas)
 
