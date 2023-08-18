@@ -95,40 +95,6 @@ function Base.getproperty(gas::Gas, s::Symbol)
    end
 end
 
-function Base.show(io::IO, gas::Gas)
-   print(io, "Gas(T = $(gas.T) K; P = $(gas.P/1000.0) kPa; MW = $(gas.MW) g/mol)")
-end
-"""
-    Base.print(io::IO, gas::Gas)
-
-Pretty print for Real gases
-"""
-function Base.print(io::IO, gas::Gas)
-   @printf(io, "Ideal Gas at\n%3s = %8.3f K\n%3s = %8.3f kPa\n%3s = %8.3f J/K/mol\n%3s = %8.3f kJ/mol\n%3s = %8.3f kJ/K/mol",
-     "T", gas.T, "P", gas.P/1000.0, "cp", gas.cp, "h", gas.h/1000.0, "s", gas.s/1000.0)
-   println(io, "\n\nwith composition:")
-   composition(gas,io)
-end
-
-"""
-    composition(gas::Gas, io::IO=stdout)
-
-Prints out the composition (Y_i) of the gas
-"""
-function composition(gas::Gas, io::IO=stdout)
-   divider = "-"^(8*2+4+9)
-   @printf(io, "%s\n", divider)
-   @printf(io, "%8s  %8s  %9s\n", "Species", "Yᵢ", "MW[g/mol]")
-   @printf(io, "%s\n", divider)
-   for (name, Yi, mw) in zip(spdict.name, gas.Y, spdict.MW)
-      if Yi != 0
-         @printf(io, "%8s  %8.3f  %9.3f\n", name, Yi, mw)
-      end
-   end
-   @printf(io, "%s\n", divider)
-   @printf(io, "%8s  %8.3f  %9.3f\n", "ΣYᵢ", sum(gas.Y), gas.MW)
-end
-
 
 """
     Base.setproperty!(gas::Gas, s::Symbol, val)
@@ -217,31 +183,8 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
 
 end
 
-"""
-Function to create the required temperature array
-"""
-function Tarray(T)
-   return [T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
-end
-
-
-"""
-    Tarray!(T, TT)
-
-In place Tarray update that returns
-[T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
-"""
-function Tarray!(T, TT)
-   TT[1] = T^-2    #T^-2
-   TT[2] = TT[1]*T #T^-1
-   TT[3] = 1.0     #T^0
-   TT[4] = T       #T^1
-   TT[5] = T*T     #T^2
-   TT[6] = T*TT[5] #T^3
-   TT[7] = T*TT[6] #T^4
-   TT[8] = log(float(T))
-   return TT
-end
+include("io.jl")
+include("utils.jl")
 
 """
 Calculates cp of the given species in J/K/mol
