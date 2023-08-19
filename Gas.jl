@@ -24,6 +24,7 @@ mutable struct Gas
    Tarray::MVector{8, Float64} # Temperature array to make calcs allocation free
 
    cp::Float64 #[J/mol/K]
+   cp_T::Float64 # derivative dcp/dT
    h::Float64  #[J/mol]
    s::Float64  #[J/mol/K]
    Y::MVector{length(spdict), Float64} # Mass fraction of species
@@ -72,6 +73,7 @@ function Gas()
 
    Gas(Pstd, Tstd, Tarray(Tstd),
     Cp(Tstd, Air), 
+    (Cp(Tstd + 1.0, Air) - Cp(Tstd - 1.0, Air) /2.0), #finite diff dCp/dT
     h(Tstd, Air),
     s(Tstd, Pstd, Air),
    [0.0, 0.0, 0.0, 0.0, 0.0, 1.0], Air.MW)
@@ -80,9 +82,9 @@ end
 
 # Overload Base.getproperty for convinence
 function Base.getproperty(gas::Gas, s::Symbol)
-   if s === :h_T
+   if s === :h_T # dh/dT
       return getfield(gas, :cp)
-   elseif s === :s_T
+   elseif s === :s_T # ∂h/∂T
       return getfield(gas, :cp)/getfield(gas, :T)
    elseif s === :hs
       return [getfield(gas, :h), getfield(gas, :s)]
@@ -101,6 +103,7 @@ end
 
 """
 function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
+   ## Setting Temperature
    if s === :T
       setfield!(gas, :T, val) # first set T
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
@@ -117,7 +120,8 @@ function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
       cptemp = 0.0
       htemp  = 0.0
       stemp  = 0.0
-      
+      cp_Ttemp = 0.0
+
       P = getfield(gas, :P)
       Y = getfield(gas, :Y)
       # Go through every species where mass fraction is not zero
@@ -126,6 +130,7 @@ function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
             cptemp = cptemp + Yᵢ * Cp(TT, a)
              htemp = htemp  + Yᵢ * h(TT, a)
              stemp = stemp  + Yᵢ * (𝜙(TT, a) - Runiv*log(P/Pstd))
+             cp_Ttemp = cp_Ttemp + Yᵢ * dCpdT(TT, a) 
          end
       end
    
@@ -208,12 +213,30 @@ include("utils.jl")
 """
 Calculates cp of the given species in J/K/mol
 (This is a completely non-allocating operation.)
+
+Cp0/R = a1*T^-2 + a2*T^-1 + a3 + a4*T + a5*T^2 + a6*T^3 + a7*T^4
 """
 @views function Cp(Tarray::AbstractVector{T}, a::AbstractVector{T}) where T
    #  Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
     Cp_R = dot(a[1:7], Tarray[1:7])
     Cp = Cp_R*Runiv
     return Cp #J/K/mol
+end
+
+"""
+    dCpdT(TT::AbstractVector{T}, a::AbstractVector{T}) where T
+
+Returns the derivative dcp/dT
+dCp0/dT = R×(-2a1*T^-3 -a2*T^-2 + a4 + 2a5*T + 3a6*T^2 + 4a7*T^3)
+"""
+function dCpdT(TT::AbstractVector{T}, a::AbstractVector{T}) where T
+   dcp_RdT = -2*a[1]*TT[1]*TT[2] -
+             a[2]*TT[1] +
+             a[4] +
+           2*a[5]*TT[4] +
+           3*a[6]*TT[5] +
+           4*a[7]*TT[6]
+   return dcp_RdT * Runiv
 end
 """
 Calculates cp for a **species** type in J/K/mol.
