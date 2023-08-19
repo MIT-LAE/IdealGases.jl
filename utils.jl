@@ -35,7 +35,10 @@ function thermo_table(gas::Gas;
     Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
     
     Trange = range(Tstart, Tend, step=Tinterval)
+    thermo_table(gas, Trange)
+end
 
+function thermo_table(gas::Gas, Trange::AbstractVector)
     cp_array = zero(Trange)
     h_array  = zero(Trange)
     𝜙_array = zero(Trange)
@@ -58,18 +61,32 @@ end
 TBW
 """
 function print_thermo_table(gas::Gas; 
-    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0,)
+    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0,
+    massbasis::Bool=true)
+    Trange = range(Tstart, Tend, step=Tinterval)
+    print_thermo_table(gas, Trange, massbasis=massbasis)
 
-    Trange, cp_array, h_array, 𝜙_array, s_array = thermo_table(gas, Tstart=Tstart,
-                                            Tend=Tend, Tinterval=Tinterval)
+end
+
+function print_thermo_table(gas::Gas, Trange::AbstractVector; massbasis::Bool=true)
+
+    Trange, cp_array, h_array, 𝜙_array, s_array = thermo_table(gas, Trange)
+    k = massbasis ? 1000.0/gas.MW : 1
     composition(gas)
     println(" ")
     divider = "-"^(4+8+12*4+4)
-    @printf("%4s %8s %12s %12s %12s %12s\n",
+    if massbasis
+        @printf("%4s %8s %12s %12s %12s %12s\n",
+        "i",  "T[K]", "cp[J/K/kg]", "h[kJ/kg]", "𝜙[kJ/K/kg]", "s[kJ/K/kg]")
+    else  
+        @printf("%4s %8s %12s %12s %12s %12s\n",
         "i",  "T[K]", "cp[J/K/mol]", "h[kJ/mol]", "𝜙[kJ/K/mol]", "s[kJ/K/mol]")
+    end
+
     println(divider)
     for (i,T) in enumerate(Trange)
         @printf("%4d %8.2f %12.4f %12.4f %12.4f %12.4f\n",
-        i,  T, cp_array[i], h_array[i]/1000.0, 𝜙_array[i]/1000.0, s_array[i]/1000.0)
+        i,  T, k*cp_array[i], k*h_array[i]/1000.0, 
+        k*𝜙_array[i]/1000.0, k*s_array[i]/1000.0)
     end
 end
