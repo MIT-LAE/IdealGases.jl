@@ -100,11 +100,11 @@ end
     Base.setproperty!(gas::Gas, s::Symbol, val)
 
 """
-function Base.setproperty!(gas::Gas, s::Symbol, val)
+function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
    if s === :T
       setfield!(gas, :T, val) # first set T
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
-      TT = getfield(gas, :Tarray) # Just convinence
+      TT = view(getfield(gas, :Tarray), :) # Just convinence
       # Next set the cp, h and s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
@@ -121,7 +121,7 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       P = getfield(gas, :P)
       Y = getfield(gas, :Y)
       # Go through every species where mass fraction is not zero
-      @views for (Yᵢ,a) in zip(Y, A)
+      @inbounds for (Yᵢ,a) in zip(Y, A)
          if Yᵢ != 0.0
             cptemp = cptemp + Yᵢ * Cp(TT, a)
              htemp = htemp  + Yᵢ * h(TT, a)
@@ -133,6 +133,7 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       setfield!(gas, :h, htemp)
       setfield!(gas, :s, stemp)
 
+   ## Setting Pressure
    elseif s === :P
       setfield!(gas, :P, val)
       TT = view(getfield(gas, :Tarray), :) # Just convinence
@@ -150,37 +151,55 @@ function Base.setproperty!(gas::Gas, s::Symbol, val)
       P = val
       Y = view(getfield(gas, :Y), :)
       # Go through every species where mass fraction is not zero
-      @views for (Yᵢ,a) in zip(Y, A)
+      @inbounds for (Yᵢ,a) in zip(Y, A)
          if Yᵢ != 0.0
             stemp = stemp  + Yᵢ * (𝜙(TT, a) - Runiv*log(P/Pstd))
          end
       end
 
       setfield!(gas, :s, stemp)
+
    elseif s ===:h
       set_h!(gas, val)
    elseif s === :TP
       set_TP!(gas, val[1], val[2])
-   elseif s === :Y # directly set mass fractions Y
-      if typeof(val) === Array{Float64, 1}
-         # If array directly store in Y
-         setfield!(gas, :Y, val) 
-      elseif typeof(val) <: Dict
-         # If dict provided set each species in the right order
-         names = spdict.name
-         Y = zeros(MVector{length(names)})
-         for (key,value) in val
-            index = findfirst(x->x==key, names)
-            Y[index] = value
-         end
-         setfield!(gas, :Y, Y)
-      end
-      # Update the MW of the gas mixture
-      setfield!(gas, :MW, MW(gas))
+   else
+      error("You tried setting gas.", s, " to a ", typeof(val))
    end
    # Note: intentionally not including other variables to prevent 
    # users from trying to directly set h, s, cp, MW etc.
+   nothing
+end
 
+function Base.setproperty!(gas::Gas, s::Symbol, val::AbstractVector{Float64})
+   if s === :Y # directly set mass fractions Y
+      n = length(getfield(gas, :Y))
+      setfield!(gas, :Y, MVector{n}(val)) 
+      setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
+
+   else
+      error("Only mass factions Y can be set with an array.",
+      "\n       You tried to set gas.",s," to a ",typeof(val))
+   end
+   nothing
+end
+
+function Base.setproperty!(gas::Gas, s::Symbol, val::AbstractDict{String, Float64})
+   if s === :Y # directly set mass fractions Y
+      # If dict provided set each species in the right order
+      names = spdict.name
+      Y = zeros(MVector{length(names), Float64})
+      for (key,value) in val
+         index = findfirst(x->x==key, names)
+         Y[index] = value
+      end
+      setfield!(gas, :Y, Y)
+      setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
+   else
+      error("Only mass factions Y can be set with a dict.",
+      "\n       You tried to set gas.",s," to a ",typeof(val))
+   end
+   nothing
 end
 
 include("io.jl")
