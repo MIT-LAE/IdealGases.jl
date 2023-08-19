@@ -5,7 +5,7 @@
 
 # using NLsolve
 using LinearAlgebra
-using BenchmarkTools
+using BenchmarkTools, ProfileView
 using StaticArrays
 using Printf
 
@@ -190,7 +190,7 @@ include("utils.jl")
 Calculates cp of the given species in J/K/mol
 (This is a completely non-allocating operation.)
 """
-@views function Cp(Tarray, a)
+@views function Cp(Tarray::AbstractVector{T}, a::AbstractVector{T}) where T
    #  Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
     Cp_R = dot(a[1:7], Tarray[1:7])
     Cp = Cp_R*Runiv
@@ -219,12 +219,14 @@ Calculates mean molecular weight
 end
 
 """
+    h(TT::AbstractVector{type}, a::AbstractVector{type}) where type
+
 Calculates h of the given **species** in J/mol
 Calcualted by:
 H0/RT = -a1*T^-2 + a2*T^-1*ln(T) + a3 + a4*T/2 + a5*T^2/3 + a6*T^3/4 + a7*T^4/5 + b1/T
       = -a1*T₁   + a2*T₂*T₈      + a3 + a4*T₄/2 + a5*T₅/3  + a6*T₆/4  + a7*T₇/5  + a₈*T₂
 """
-function h(TT, a)
+function h(TT::AbstractVector{type}, a::AbstractVector{type}) where type
     h_RT  = -a[1]*TT[1] + 
              a[2]*TT[8]*TT[2] + 
              a[3] + 
