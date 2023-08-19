@@ -26,40 +26,50 @@ function Tarray!(T, TT)
 end
 
 """
-    thermo_table(gas::Gas, 
-    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0,
-    print::Bool=true)
+    thermo_table(gas::Gas; 
+    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
 
 Quickly generate a table of cp, h and s for a gas
 """
 function thermo_table(gas::Gas; 
-    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0,
-    print::Bool=false)
+    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
     
-   Trange = range(Tstart, Tend, step=Tinterval)
+    Trange = range(Tstart, Tend, step=Tinterval)
 
-   cp_array = zero(Trange)
-   h_array  = zero(Trange)
-   ϕ_array  = zero(Trange)
-   if print
-      composition(gas)
-      println(" ")
-      divider = "-"^(4+8+12*3+4)
-      @printf("%4s %8s %12s %12s %12s\n",
-            "i",  "T[K]", "cp[J/K/mol]", "h[kJ/mol]", "s[kJ/K/mol]")
-      println(divider)
-      for (i,T) in enumerate(Trange)
-         gas.T = T
-         @printf("%4d %8.2f %12.4f %12.4f %12.4f\n",
-         i,  gas.T, gas.cp, gas.h/1000.0, gas.s/1000.0)
-      end
-   else
-      for (i,T) in enumerate(Trange)
-         gas.T = T
-         cp_array[i]= gas.cp
-         h_array[i] =  gas.h
-         ϕ_array[i] =  gas.𝜙
-      end
-   return Trange, cp_array, h_array, ϕ_array
+    cp_array = zero(Trange)
+    h_array  = zero(Trange)
+    𝜙_array = zero(Trange)
+    s_array  = zero(Trange)
+    for (i,T) in enumerate(Trange)
+        gas.T = T
+        cp_array[i]= gas.cp
+        h_array[i] =  gas.h
+        𝜙_array[i] =  gas.𝜙
+        s_array[i] =  gas.s
+    end
+   return Trange, cp_array, h_array, 𝜙_array, s_array
    end
+end
+
+"""
+    print_thermo_table(gas::Gas; 
+    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0,)
+
+TBW
+"""
+function print_thermo_table(gas::Gas; 
+    Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0,)
+
+    Trange, cp_array, h_array, 𝜙_array, s_array = thermo_table(gas, Tstart=Tstart,
+                                            Tend=Tend, Tinterval=Tinterval)
+    composition(gas)
+    println(" ")
+    divider = "-"^(4+8+12*4+4)
+    @printf("%4s %8s %12s %12s %12s %12s\n",
+        "i",  "T[K]", "cp[J/K/mol]", "h[kJ/mol]", "𝜙[kJ/K/mol]", "s[kJ/K/mol]")
+    println(divider)
+    for (i,T) in enumerate(Trange)
+        @printf("%4d %8.2f %12.4f %12.4f %12.4f %12.4f\n",
+        i,  T, cp_array[i], h_array[i]/1000.0, 𝜙_array[i]/1000.0, s_array[i]/1000.0)
+    end
 end
