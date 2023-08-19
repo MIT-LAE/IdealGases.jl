@@ -48,8 +48,8 @@ function thermo_table(gas::Gas;
         s_array[i] =  gas.s
     end
    return Trange, cp_array, h_array, 𝜙_array, s_array
-   end
 end
+
 
 """
     print_thermo_table(gas::Gas; 
