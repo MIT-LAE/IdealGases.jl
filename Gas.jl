@@ -385,15 +385,27 @@ with composition:
 ```
 """
 function set_h!(gas::Gas, hspec::Float64)
+   
    T = gas.T
    dT = T
-   while abs(dT) > ϵ
+   for i in 1:20 # abs(dT) > ϵ
       res = gas.h - hspec # Residual
       res_t = gas.cp  # ∂R/∂T = ∂h/∂T = cp
       dT = -res/res_t # Newton step
+      
+      if abs(dT) ≤ ϵ
+         break
+      end
+
       T = T + dT
       gas.T = T
    end
+
+   if abs(dT) > ϵ
+      error("Error: `set_h!` did not converge:\ngas=", print(gas),
+       "\n\nabs(dT) = ", abs(dT), " > ϵ (", ϵ, ")")
+   end
+
    return gas
 end
 """
@@ -404,18 +416,6 @@ Sets the gas temperature based on a specified change in enthalpy (Δh) [J/mol]
 function set_Δh!(gas::Gas, Δhspec::Float64)
    hf = gas.h + Δh
    set_h!(gas, hf)
-   ## Could also be implemented as this but... why?
-   # h0 = gas.h
-   # T = gas.T + Δhspec/gas.cp
-   # gas.T = T
-   # dT = T
-   # while abs(dT) > ϵ
-   #    res = (gas.h - h0) - Δhspec
-   #    res_t = gas.cp
-   #    dT = -res/res_t
-   #    T = T + dT
-   #    gas.T = T
-   # end
    return gas
 end
 """
@@ -479,7 +479,7 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
    gas.P = Pfinal
    gas.T = Tfinal
    
-   while abs(dT)>ϵ
+   for i in 1:20# abs(dT)>ϵ
       ## Original approach by M. Drela using entropy complement
       # res  = (𝜙(Tfinal, Air) - s)/Runiv - log(PR)/ηp
       # res_dT = cp(Tfinal,Air)/Runiv/Tfinal
@@ -488,9 +488,18 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
       res_dT = gas.s_T/Runiv
       dT  = - res/res_dT
 
+      if abs(dT) ≤ ϵ
+         break
+      end
+
       Tfinal = Tfinal + dT
       gas.T = Tfinal
       # println("$i: $Tfinal $dT")
+   end
+
+   if abs(dT) > ϵ
+      error("Error: Compress did not converge:\ngas=", print(gas),
+       "\n\nabs(dT) = ", abs(dT), " > ϵ (", ϵ, ")")
    end
 
    return gas
