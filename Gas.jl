@@ -86,7 +86,9 @@ end
 function Base.getproperty(gas::Gas, sym::Symbol)
    if sym === :h_T # dh/dT
       return getfield(gas, :cp)
-   elseif sym === :s_T # ∂h/∂T
+   elseif sym === :ϕ_T # dϕ/dT
+      return getfield(gas, :cp)/getfield(gas, :T)
+   elseif sym === :s_T # ∂s/∂T = dϕ/dT
       return getfield(gas, :cp)/getfield(gas, :T)
    elseif sym === :hs
       return [getfield(gas, :h), getfield(gas, :s)]
@@ -472,7 +474,7 @@ Compression with polytropic efficiency
 function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
    T0 = gas.T
-   s0 = gas.s
+   ϕ0 = gas.ϕ
    P0 = gas.P
 
    Tfinal = T0 * PR^(Runiv/gas.cp/ηp)
@@ -482,12 +484,8 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
    gas.T = Tfinal
    
    for i in 1:20# abs(dT)>ϵ
-      ## Original approach by M. Drela using entropy complement
-      # res  = (𝜙(Tfinal, Air) - s)/Runiv - log(PR)/ηp
-      # res_dT = cp(Tfinal,Air)/Runiv/Tfinal
-      ## Modified approach using pressure dependent entropy
-      res  = (gas.s - s0)/Runiv + (log(PR) - log(PR)/ηp)
-      res_dT = gas.s_T/Runiv
+      res  = (gas.ϕ - ϕ0)/Runiv - log(PR)/ηp
+      res_dT = gas.ϕ_T/Runiv
       dT  = - res/res_dT
 
       if abs(dT) ≤ ϵ
