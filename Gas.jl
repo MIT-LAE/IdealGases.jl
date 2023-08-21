@@ -38,7 +38,8 @@ Constructs `Gas` with given composition `Y`
 
 """
 function Gas(Y)
-   Gas(Pstd, Tstd, Tarray(Tstd), 0.0, 0.0, 0.0, Y, 28.965)
+   gas = Gas(); gas.Y = Y
+   return gas
 end
 
 """
