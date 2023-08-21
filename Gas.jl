@@ -113,7 +113,7 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
       # Next set the cp, h and s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
-      if val<1000.0
+      if val<1000.0 #Value given is the desired temperature
          A = view(spdict.alow, :)
       else
          A = view(spdict.ahigh, :)
@@ -147,24 +147,24 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
       # Next set s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
-      if val<1000.0
+      if TT[4]<1000.0 #TT[4] is T
          A = view(spdict.alow, :)
       else
          A = view(spdict.ahigh, :)
       end   
       ## Initialize temporary vars
-      stemp  = 0.0
+      ϕtemp  = 0.0
       
       P = val
       Y = view(getfield(gas, :Y), :)
       # Go through every species where mass fraction is not zero
       @inbounds for (Yᵢ,a) in zip(Y, A)
          if Yᵢ != 0.0
-            stemp = stemp  + Yᵢ * (𝜙(TT, a) - Runiv*log(P/Pstd))
+            ϕtemp = ϕtemp  + Yᵢ * 𝜙(TT, a)
          end
       end
 
-      setfield!(gas, :s, stemp)
+      setfield!(gas, :ϕ, ϕtemp)
 
    elseif sym ===:h
       set_h!(gas, val)
