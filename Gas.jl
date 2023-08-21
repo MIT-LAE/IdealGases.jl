@@ -26,7 +26,8 @@ mutable struct Gas
    cp::Float64 #[J/mol/K]
    cp_T::Float64 # derivative dcp/dT
    h::Float64  #[J/mol]
-   s::Float64  #[J/mol/K]
+   ϕ::Float64  #[J/mol/K] Entropy complement fn ϕ(T) = ∫ cp(T)/T dT from Tref to T
+   
    Y::MVector{length(spdict), Float64} # Mass fraction of species
    MW::Float64 # Molecular weight [g/mol]
 end
@@ -82,19 +83,19 @@ function Gas()
 end
 
 # Overload Base.getproperty for convinence
-function Base.getproperty(gas::Gas, s::Symbol)
-   if s === :h_T # dh/dT
+function Base.getproperty(gas::Gas, sym::Symbol)
+   if sym === :h_T # dh/dT
       return getfield(gas, :cp)
-   elseif s === :s_T # ∂h/∂T
+   elseif sym === :s_T # ∂h/∂T
       return getfield(gas, :cp)/getfield(gas, :T)
-   elseif s === :hs
+   elseif sym === :hs
       return [getfield(gas, :h), getfield(gas, :s)]
-   elseif s === :TP
+   elseif sym === :TP
       return [getfield(gas, :T), getfield(gas, :P)]
-   elseif s === :𝜙
-      return 𝜙(gas)
+   elseif sym === :s
+      return getfield(gas, :ϕ) - Runiv*log(getfield(gas,:P)/Pstd)
    else
-      return getfield(gas, s)
+      return getfield(gas, sym)
    end
 end
 
@@ -103,9 +104,9 @@ end
     Base.setproperty!(gas::Gas, s::Symbol, val)
 
 """
-function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
+function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
    ## Setting Temperature
-   if s === :T
+   if sym === :T
       setfield!(gas, :T, val) # first set T
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
       TT = view(getfield(gas, :Tarray), :) # Just convinence
@@ -120,7 +121,7 @@ function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
       ## Initialize temporary vars
       cptemp = 0.0
       htemp  = 0.0
-      stemp  = 0.0
+      ϕtemp  = 0.0
       cp_Ttemp = 0.0
 
       P = getfield(gas, :P)
@@ -130,17 +131,17 @@ function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
          if Yᵢ != 0.0
             cptemp = cptemp + Yᵢ * Cp(TT, a)
              htemp = htemp  + Yᵢ * h(TT, a)
-             stemp = stemp  + Yᵢ * (𝜙(TT, a) - Runiv*log(P/Pstd))
+             ϕtemp = ϕtemp  + Yᵢ * 𝜙(TT, a)
              cp_Ttemp = cp_Ttemp + Yᵢ * dCpdT(TT, a) 
          end
       end
    
       setfield!(gas, :cp, cptemp)
       setfield!(gas, :h, htemp)
-      setfield!(gas, :s, stemp)
+      setfield!(gas, :ϕ, ϕtemp)
 
    ## Setting Pressure
-   elseif s === :P
+   elseif sym === :P
       setfield!(gas, :P, val)
       TT = view(getfield(gas, :Tarray), :) # Just convinence
       # Next set s of the gas
@@ -165,33 +166,33 @@ function Base.setproperty!(gas::Gas, s::Symbol, val::Float64)
 
       setfield!(gas, :s, stemp)
 
-   elseif s ===:h
+   elseif sym ===:h
       set_h!(gas, val)
-   elseif s === :TP
+   elseif sym === :TP
       set_TP!(gas, val[1], val[2])
    else
-      error("You tried setting gas.", s, " to a ", typeof(val))
+      error("You tried setting gas.", sym, " to a ", typeof(val))
    end
    # Note: intentionally not including other variables to prevent 
    # users from trying to directly set h, s, cp, MW etc.
    nothing
 end
 
-function Base.setproperty!(gas::Gas, s::Symbol, val::AbstractVector{Float64})
-   if s === :Y # directly set mass fractions Y
+function Base.setproperty!(gas::Gas, sym::Symbol, val::AbstractVector{Float64})
+   if sym === :Y # directly set mass fractions Y
       n = length(getfield(gas, :Y))
       setfield!(gas, :Y, MVector{n}(val)) 
       setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
 
    else
       error("Only mass factions Y can be set with an array.",
-      "\n       You tried to set gas.",s," to a ",typeof(val))
+      "\n       You tried to set gas.",sym," to a ",typeof(val))
    end
    nothing
 end
 
-function Base.setproperty!(gas::Gas, s::Symbol, val::AbstractDict{String, Float64})
-   if s === :Y # directly set mass fractions Y
+function Base.setproperty!(gas::Gas, sym::Symbol, val::AbstractDict{String, Float64})
+   if sym === :Y # directly set mass fractions Y
       # If dict provided set each species in the right order
       names = spdict.name
       Y = zeros(MVector{length(names), Float64})
@@ -203,7 +204,7 @@ function Base.setproperty!(gas::Gas, s::Symbol, val::AbstractDict{String, Float6
       setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
    else
       error("Only mass factions Y can be set with a dict.",
-      "\n       You tried to set gas.",s," to a ",typeof(val))
+      "\n       You tried to set gas.",sym," to a ",typeof(val))
    end
    nothing
 end
