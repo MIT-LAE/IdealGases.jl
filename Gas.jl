@@ -37,8 +37,8 @@ end
 Constructs `Gas` with given composition `Y`
 
 """
-function Gas(Y)
-   gas = Gas(); gas.Y = Y
+function Gas(Y::AbstractVector)
+   gas = Gas(); gas.Y = convert(Vector{Float64}, Y)
    return gas
 end
 
