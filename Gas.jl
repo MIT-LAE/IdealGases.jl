@@ -415,11 +415,16 @@ end
 """
     set_Δh!(gas::Gas, Δhspec::Float64)
 
-Sets the gas temperature based on a specified change in enthalpy (Δh) [J/mol]
+Sets the gas state based on a specified change in enthalpy (Δh) [J/mol],
+and a given polytropic efficiency. This represents adding or removing some work
+from the gas.
 """
-function set_Δh!(gas::Gas, Δhspec::Float64)
-   hf = gas.h + Δh
+function set_Δh!(gas::Gas, Δhspec::Float64, ηp::Float64 = 1.0)
+   P0 = gas.P
+   ϕ0 = gas.ϕ
+   hf = gas.h + Δhspec
    set_h!(gas, hf)
+   gas.P = P0*exp(ηp/Runiv * (gas.ϕ - ϕ0))
    return gas
 end
 """
