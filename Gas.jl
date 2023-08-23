@@ -219,7 +219,7 @@ include("idealgasthermo.jl")
 Calculates mean molecular weight
 """
 @views function MW(g::Gas)
-   MW = dot(g.Y, spdict.MW)
+   MW = 1/dot(g.Y, 1 ./spdict.MW)
    return MW
 end
 
