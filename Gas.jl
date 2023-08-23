@@ -96,6 +96,12 @@ function Base.getproperty(gas::Gas, sym::Symbol)
       return [getfield(gas, :T), getfield(gas, :P)]
    elseif sym === :s
       return getfield(gas, :ϕ) - Runiv*log(getfield(gas,:P)/Pstd)
+   elseif sym === :X # Get mole fractions
+      Y = getfield(gas, :Y)
+      MW = spdict.MW
+      num = Y ./ MW
+      den = dot(Y, 1 ./MW)
+      return num ./den
    else
       return getfield(gas, sym)
    end
