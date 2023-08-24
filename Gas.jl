@@ -75,7 +75,7 @@ function Gas()
 
    Gas(Pstd, Tstd, Tarray(Tstd),
     Cp(Tstd, Air), 
-    (Cp(Tstd + 1.0, Air) - Cp(Tstd - 1.0, Air) /2.0), #finite diff dCp/dT
+    (Cp(Tstd + 1.0, Air) - Cp(Tstd - 1.0, Air)) /2.0, #finite diff dCp/dT
     h(Tstd, Air),
     s(Tstd, Pstd, Air),
    [0.0, 0.0, 0.0, 0.0, 0.0, 1.0], Air.MW)
