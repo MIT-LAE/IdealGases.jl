@@ -134,19 +134,21 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
 
       P = getfield(gas, :P)
       Y = getfield(gas, :Y)
+      MW = view(spdict.MW, :) # g/mol
       # Go through every species where mass fraction is not zero
-      @inbounds for (Yᵢ,a) in zip(Y, A)
+      @inbounds for (Yᵢ,a, m) in zip(Y, A, MW)
          if Yᵢ != 0.0
-            cptemp = cptemp + Yᵢ * Cp(TT, a)
-             htemp = htemp  + Yᵢ * h(TT, a)
-             ϕtemp = ϕtemp  + Yᵢ * 𝜙(TT, a)
-             cp_Ttemp = cp_Ttemp + Yᵢ * dCpdT(TT, a) 
+            cptemp = cptemp + Yᵢ * Cp(TT, a) /m
+             htemp = htemp  + Yᵢ * h(TT, a)  /m
+             ϕtemp = ϕtemp  + Yᵢ * 𝜙(TT, a)  /m
+             cp_Ttemp = cp_Ttemp + Yᵢ * dCpdT(TT, a) /m
          end
       end
    
-      setfield!(gas, :cp, cptemp)
-      setfield!(gas, :h, htemp)
-      setfield!(gas, :ϕ, ϕtemp)
+      setfield!(gas, :cp, cptemp*1000.0)
+      setfield!(gas, :h, htemp*1000.0)
+      setfield!(gas, :ϕ, ϕtemp*1000.0)
+      setfield!(gas, :cp_T, cp_Ttemp*1000.0)
 
    ## Setting Pressure
    elseif sym === :P
@@ -165,14 +167,15 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
       
       P = val
       Y = view(getfield(gas, :Y), :)
+      MW = view(spdict.MW, :) # g/mol
       # Go through every species where mass fraction is not zero
-      @inbounds for (Yᵢ,a) in zip(Y, A)
+      @inbounds for (Yᵢ,a,m) in zip(Y, A, MW)
          if Yᵢ != 0.0
-            ϕtemp = ϕtemp  + Yᵢ * 𝜙(TT, a)
+            ϕtemp = ϕtemp  + Yᵢ * 𝜙(TT, a) / m
          end
       end
 
-      setfield!(gas, :ϕ, ϕtemp)
+      setfield!(gas, :ϕ, ϕtemp*1000.0)
 
    elseif sym ===:h
       set_h!(gas, val)
