@@ -17,7 +17,7 @@ end
 """
     dCpdT(TT::AbstractVector{T}, a::AbstractVector{T}) where T
 
-Returns the derivative dcp/dT
+Returns the derivative dcp/dT [J/K²/mol]
 dCp0/dT = R(-2a1*T^-3 -a2*T^-2 + a4 + 2a5*T + 3a6*T^2 + 4a7*T^3)
 """
 function dCpdT(TT::AbstractVector{T}, a::AbstractVector{T}) where T
@@ -77,7 +77,7 @@ function 𝜙(TT::AbstractVector{type},a::AbstractVector{type}) where type
 end
 
 """
-Calculates cp for a **species** type in J/K/mol.
+Calculates cp for a **species** type in J/K/kg.
 """
 function Cp(T, sp::species)
    TT = Tarray(T)
@@ -87,7 +87,8 @@ function Cp(T, sp::species)
       s = :ahigh
    end
    a = getfield(sp, s)
-   Cp(TT, a)
+   return Cp(TT, a) * 1000.0/sp.MW
+
 end
 
 """
@@ -104,32 +105,10 @@ function h(T, sp::species)
    h(TT, a)
 end
 
-
-"""
-    𝜙(g::Gas)
-
-Calculates the entropy complement function 𝜙=∫(cₚ/T)dT of the 
-given **mixture** in J/K/mol
-This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
-"""
-function 𝜙(g::Gas)
-   ϕ = 0.0
-   if gas.T<1000.0
-      A = view(spdict.alow, :)
-   else
-      A = view(spdict.ahigh, :)
-   end
-
-   for (Yᵢ, a) in zip(g.Y, A)
-      ϕ = ϕ + Yᵢ * 𝜙(g.Tarray, a)
-   end
-   return ϕ
-end
-
 """
     s(T, P, sp::species)
 
-Calculates s for a species
+Calculates s for a species in J/K/kg
 """
 function s(T, P, sp::species)
    TT = Tarray(T)
@@ -141,5 +120,5 @@ function s(T, P, sp::species)
    end
    a = getfield(sp, s)
    sᵒ = 𝜙(TT, a) - Runiv*log(P/Pref)
-   return sᵒ
+   return sᵒ * 1000.0/sp.MW
 end
