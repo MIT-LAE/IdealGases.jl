@@ -70,3 +70,4 @@ end
 
 #Read species data from thermo.inp
 const spdict = readThermo("thermo.inp")
+const Nspecies = length(spdict)
