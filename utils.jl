@@ -47,7 +47,7 @@ function thermo_table(gas::Gas, Trange::AbstractVector)
         gas.T = T
         cp_array[i]= gas.cp
         h_array[i] =  gas.h
-        𝜙_array[i] =  gas.𝜙
+        𝜙_array[i] =  gas.ϕ
         s_array[i] =  gas.s
     end
    return Trange, cp_array, h_array, 𝜙_array, s_array
