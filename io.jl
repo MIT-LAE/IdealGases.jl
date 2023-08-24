@@ -25,17 +25,18 @@ end
 Prints out the composition (Y_i) of the gas
 """
 function composition(gas::Gas, io::IO=stdout)
-   divider = "-"^(8*2+4+9)
+   divider = "-"^(8*3+2*3+9)
    @printf(io, "%s\n", divider)
-   @printf(io, "%8s  %8s  %9s\n", "Species", "Yᵢ", "MW[g/mol]")
+   @printf(io, "%8s  %8s  %8s  %9s\n", "Species", "Xᵢ", "Yᵢ", "MW[g/mol]")
    @printf(io, "%s\n", divider)
-   for (name, Yi, mw) in zip(spdict.name, gas.Y, spdict.MW)
+   for (name, Xi, Yi, mw) in zip(spdict.name, gas.X, gas.Y, spdict.MW)
       if Yi != 0
-         @printf(io, "%8s  %8.3f  %9.3f\n", name, Yi, mw)
+         @printf(io, "%8s  %8.3f  %8.3f  %9.3f\n", name, Xi, Yi, mw)
       end
    end
    @printf(io, "%s\n", divider)
-   @printf(io, "%8s  %8.3f  %9.3f\n", "ΣYᵢ", sum(gas.Y), gas.MW)
+   @printf(io, "%8s  %8.3f  %8.3f  %9.3f\n", "Σ", 
+   sum(gas.X), sum(gas.Y), gas.MW)
 end
 
 """
@@ -72,7 +73,7 @@ end
 function print_thermo_table(gas::Gas, Trange::AbstractVector; massbasis::Bool=true)
 
     Trange, cp_array, h_array, 𝜙_array, s_array = thermo_table(gas, Trange)
-    k = massbasis ? 1000.0/gas.MW : 1
+    k = massbasis ? 1 : gas.MW/1000.0
     composition(gas)
     println(" ")
     divider = "-"^(4+8+12*4+4)
