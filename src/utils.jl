@@ -1,6 +1,12 @@
 
 """
+    Tarray(T)
+
 Function to create the required temperature array
+```math
+[T^-2, T^-1, 1.0, T, T^2, T^3, T^4, \\log(T)]
+```
+
 """
 function Tarray(T)
    return [T^-2, T^-1, 1.0, T, T^2, T^3, T^4, log(T)]
@@ -29,7 +35,7 @@ end
     thermo_table(gas::Gas; 
     Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
 
-Quickly generate a table of cp, h and s for a gas
+Quickly generate a table of cp, h, and s for a gas
 """
 function thermo_table(gas::Gas; 
     Tstart::Float64=Tstd, Tend::Float64=2000.0, Tinterval::Float64=100.0)
@@ -38,6 +44,11 @@ function thermo_table(gas::Gas;
     thermo_table(gas, Trange)
 end
 
+"""
+    thermo_table(gas::Gas, Trange::AbstractVector)
+
+Method to generate cp, h, and s for a given `Trange`.
+"""
 function thermo_table(gas::Gas, Trange::AbstractVector)
     cp_array = zero(Trange)
     h_array  = zero(Trange)

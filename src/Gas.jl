@@ -1,7 +1,7 @@
 # """
 # Thermally-perfect gas thermodynamics based on NASA polynomials
 # """
-# module IdealGas
+module IdealGas
 
 # using NLsolve
 using LinearAlgebra
@@ -9,9 +9,15 @@ using BenchmarkTools, ProfileView
 using StaticArrays
 using Printf
 
+export Gas, set_h!, set_hP!, set_TP!, set_Δh!
+
 include("constants.jl")
+include("species.jl")
+export species
 include("readThermo.jl")
 include("combustion.jl")
+
+const __Gasroot__ = @__DIR__
 
 """
     Gas
@@ -381,13 +387,15 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
 end
 
-Y = Dict(  
-"N2"  => 0.78084,
-"Ar"  => 0.009365,
-"Air" => 0.0,
-"H2O" => 0.0,
-"CO2" => 0.000319,
-"O2"  => 0.209476)
+end
 
-gas = Gas()
+# Y = Dict(  
+# "N2"  => 0.78084,
+# "Ar"  => 0.009365,
+# "Air" => 0.0,
+# "H2O" => 0.0,
+# "CO2" => 0.000319,
+# "O2"  => 0.209476)
+
+# gas = Gas()
 

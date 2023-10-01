@@ -70,6 +70,12 @@ function print_thermo_table(gas::Gas;
 
 end
 
+"""
+    print_thermo_table(gas::Gas, Trange::AbstractVector; massbasis::Bool=true)
+
+method to print thermo table for a given range of temperatures `Trange` and 
+allows one to specify whether output is desired on a mass or molar basis. 
+"""
 function print_thermo_table(gas::Gas, Trange::AbstractVector; massbasis::Bool=true)
 
     Trange, cp_array, h_array, 𝜙_array, s_array = thermo_table(gas, Trange)

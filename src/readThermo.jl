@@ -1,22 +1,5 @@
 using StructArrays
 """
-species is a structure that holds the NASA 9 polynomial coefficients `alow` and `ahigh` 
-for the two temprature regions separated by `Tmid` 
-(here we only work with temperature less than 6000 K so typically only 2 T intervals required)
-the molecular weight `MW` and the heat of formation `Hf` (J/mol) for a given chemical species (at 298.15 K).
-
-See https://shepherd.caltech.edu/EDL/PublicResources/sdt/formats/nasa.html for typical data format
-"""
-struct species
-    name::String
-    Tmid::Float64
-    alow::Array{Float64, 1}
-    ahigh::Array{Float64, 1}
-    MW::Float64
-    Hf::Float64
-end
-
-"""
 Reads a NASA 9 polynomial thermo definintion file which can be obtained from
 [NASA thermobuild](https://cearun.grc.nasa.gov/ThermoBuild/index_ds.html) 
 and returns a dictionary of species.
@@ -30,7 +13,8 @@ If a NASA 9 polynomial definition file `thermo.inp` exists then,
 
 will return a dictionary of species.
 
-`readThermo` only considers 2 temperature ranges (typically 200-1000 K and 1000-6000 K) but more can be added if needed.
+`readThermo` only considers 2 temperature ranges 
+(typically 200-1000 K and 1000-6000 K) but more can be added if needed.
 """
 function readThermo(filename)
 
@@ -69,5 +53,6 @@ function readThermo(filename)
 end
 
 #Read species data from thermo.inp
-const spdict = readThermo("thermo.inp")
+println("Here --> ", pwd())
+const spdict = readThermo("data/thermo.inp")
 const Nspecies = length(spdict)
