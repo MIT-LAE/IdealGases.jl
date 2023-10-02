@@ -2,7 +2,7 @@
     Gas
 
 A type that represents an ideal gas that is calorically perfect 
-i.e. ``c_p(T)``
+i.e. ``c_p(T)``, ``h(T)``, ``𝜙(T)`` and ``s(T,P)``.
 """
 mutable struct Gas{N}
    P::Float64 # [Pa]
@@ -57,13 +57,16 @@ with composition:
 ```
 """
 function Gas()
-   Air = spdict[findfirst(x->x=="Air", spdict.name)]
+   i = findfirst(x->x=="Air", spdict.name)
+   Air = spdict[i]
+   Y = zeros(Nspecies)
+   Y[i] = 1.0
    Gas{Nspecies}(Pstd, Tstd, Tarray(Tstd),
     Cp(Tstd, Air), 
     (Cp(Tstd + 1.0, Air) - Cp(Tstd - 1.0, Air)) /2.0, #finite diff dCp/dT
     h(Tstd, Air),
     s(Tstd, Pstd, Air),
-   zeros(Nspecies), Air.MW)
+    Y, Air.MW)
 
 end
 
