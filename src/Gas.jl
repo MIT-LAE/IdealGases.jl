@@ -5,7 +5,6 @@ module IdealGas
 
 # using NLsolve
 using LinearAlgebra
-using BenchmarkTools, ProfileView
 using StaticArrays
 using Printf
 
