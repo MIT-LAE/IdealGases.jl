@@ -53,6 +53,5 @@ function readThermo(filename)
 end
 
 #Read species data from thermo.inp
-println("Here --> ", pwd())
-const spdict = readThermo("data/thermo.inp")
+const spdict = readThermo(joinpath(__Gasroot__, "data/thermo.inp"))
 const Nspecies = length(spdict)

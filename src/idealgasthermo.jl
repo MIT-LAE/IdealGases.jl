@@ -8,8 +8,7 @@ Calculates cp of the given species in J/K/mol
 Cp0/R = a₁T⁻² + a₂T⁻¹ + a₃ + a₄T + a₅T² + a₆T³ + a₇T⁴
 """
 function Cp(Tarray::AbstractVector{T}, a::AbstractVector{T}) where T
-   #  Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
-    Cp_R = dot(a[1:7], Tarray[1:7])
+    Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
     Cp = Cp_R*Runiv
     return Cp #J/K/mol
 end
@@ -76,7 +75,11 @@ function 𝜙(TT::AbstractVector{type},a::AbstractVector{type}) where type
     return so #J/K/mol
 end
 
+# For individual species:
+
 """
+    Cp(T, sp::species)
+
 Calculates cp for a **species** type in J/K/kg.
 """
 function Cp(T, sp::species)
@@ -92,7 +95,9 @@ function Cp(T, sp::species)
 end
 
 """
-Calculates h for a species
+    h(T, sp::species)
+
+Calculates h for a species in J/kg
 """
 function h(T, sp::species)
    TT = Tarray(T)
@@ -102,7 +107,7 @@ function h(T, sp::species)
       s = :ahigh
    end
    a = getfield(sp, s)
-   h(TT, a)
+   h(TT, a) *1000.0/sp.MW
 end
 
 """
@@ -112,13 +117,12 @@ Calculates s for a species in J/K/kg
 """
 function s(T, P, sp::species)
    TT = Tarray(T)
-   Pref = 101325
    if T<1000.0
       s = :alow
    else
       s = :ahigh
    end
    a = getfield(sp, s)
-   sᵒ = 𝜙(TT, a) - Runiv*log(P/Pref)
+   sᵒ = 𝜙(TT, a) - Runiv*log(P/Pstd)
    return sᵒ * 1000.0/sp.MW
 end

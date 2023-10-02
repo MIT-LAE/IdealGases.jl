@@ -13,7 +13,7 @@ end
 Pretty print for `Gas` instance
 """
 function Base.print(io::IO, gas::Gas)
-   @printf(io, "Ideal Gas at\n%3s = %8.3f K\n%3s = %8.3f kPa\n%3s = %8.3f J/K/mol\n%3s = %8.3f kJ/mol\n%3s = %8.3f kJ/K/mol",
+   @printf(io, "Ideal Gas at\n%3s = %8.3f K\n%3s = %8.3f kPa\n%3s = %8.3f J/K/kg\n%3s = %8.3f kJ/kg\n%3s = %8.3f kJ/K/kg",
      "T", gas.T, "P", gas.P/1000.0, "cp", gas.cp, "h", gas.h/1000.0, "s", gas.s/1000.0)
    println(io, "\n\nwith composition:")
    composition(gas,io)
