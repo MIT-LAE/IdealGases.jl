@@ -1,8 +1,8 @@
 """
-    Gas
+    Gas{N}
 
 A type that represents an ideal gas that is calorically perfect 
-i.e. ``c_p(T)``, ``h(T)``, ``𝜙(T)`` and ``s(T,P)``.
+i.e. ``c_p(T)``, ``h(T)``, ``\\phi(T)`` and ``s(T,P)``.
 """
 mutable struct Gas{N}
    P::Float64 # [Pa]
@@ -83,7 +83,7 @@ function Base.getproperty(gas::Gas, sym::Symbol)
    elseif sym === :TP
       return [getfield(gas, :T), getfield(gas, :P)]
    elseif sym === :s
-      return getfield(gas, :ϕ) - Runiv*log(getfield(gas,:P)/Pstd)
+      return getfield(gas, :ϕ) - Runiv*log(getfield(gas,:P)/Pstd)/getfield(gas, :MW)
    elseif sym === :X # Get mole fractions
       Y = getfield(gas, :Y)
       MW = spdict.MW
@@ -281,7 +281,7 @@ function set_h!(gas::Gas, hspec::Float64)
    return gas
 end
 """
-    set_Δh!(gas::Gas, Δhspec::Float64)
+    set_Δh!(gas::Gas, Δhspec::Float64, ηp::Float64 = 1.0)
 
 Sets the gas state based on a specified change in enthalpy (Δh) [J/mol],
 and a given polytropic efficiency. This represents adding or removing some work
