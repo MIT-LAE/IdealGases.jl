@@ -64,4 +64,25 @@ function thermo_table(gas::Gas, Trange::AbstractVector)
    return Trange, cp_array, h_array, 𝜙_array, s_array
 end
 
+"""
+    Y2X(Y::AbstractVector)
 
+Convert from mass fraction Yi to mole fractions Xi
+"""
+function Y2X(Y::AbstractVector)
+    MW = spdict.MW
+    num = Y ./ MW
+    den = dot(Y, 1 ./MW)
+    return num ./den
+end  # function Y2X
+
+"""
+    X2Y(X::AbstractVector)
+Convert from mole fraction Xi to mass fractions Yi
+"""
+function X2Y(X::AbstractVector)
+    MW = spdict.MW
+    num = X .* MW
+    den = dot(X, MW)
+    return num ./den
+end  # function X2Y

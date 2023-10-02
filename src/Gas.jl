@@ -218,6 +218,17 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::AbstractDict{String, Floa
       end
       setfield!(gas, :Y, Y)
       setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
+   elseif sym === :X
+      names = spdict.name
+      X = zeros(MVector{length(names), Float64})
+      Y = zeros(MVector{length(names), Float64})
+      for (key,value) in val
+         index = findfirst(x->x==key, names)
+         X[index] = value
+      end
+      Y .= X2Y(X)
+      setfield!(gas, :Y, Y)
+      setfield!(gas, :MW, MW(gas))
    else
       error("Only mass factions Y can be set with a dict.",
       "\n       You tried to set gas.",sym," to a ",typeof(val))
