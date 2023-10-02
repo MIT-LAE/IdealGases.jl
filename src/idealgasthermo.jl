@@ -4,8 +4,9 @@
 
 Calculates cp of the given species in J/K/mol
 (This is a completely non-allocating operation.)
-
+```
 Cp0/R = a₁T⁻² + a₂T⁻¹ + a₃ + a₄T + a₅T² + a₆T³ + a₇T⁴
+```
 """
 function Cp(Tarray::AbstractVector{T}, a::AbstractVector{T}) where T
     Cp_R = dot(view(a, 1:7), view(Tarray, 1:7))
@@ -17,7 +18,9 @@ end
     dCpdT(TT::AbstractVector{T}, a::AbstractVector{T}) where T
 
 Returns the derivative dcp/dT [J/K²/mol]
+```
 dCp0/dT = R(-2a1*T^-3 -a2*T^-2 + a4 + 2a5*T + 3a6*T^2 + 4a7*T^3)
+```
 """
 function dCpdT(TT::AbstractVector{T}, a::AbstractVector{T}) where T
    dcp_RdT = -2*a[1]*TT[1]*TT[2] -
@@ -33,9 +36,12 @@ end
     h(TT::AbstractVector{type}, a::AbstractVector{type}) where type
 
 Calculates h of the given **species** in J/mol
+
 Calcualted by:
+```
 H0/RT = -a1*T^-2 + a2*T^-1*ln(T) + a3 + a4*T/2 + a5*T^2/3 + a6*T^3/4 + a7*T^4/5 + b1/T
       = -a1*T₁   + a2*T₂*T₈      + a3 + a4*T₄/2 + a5*T₅/3  + a6*T₆/4  + a7*T₇/5  + a₈*T₂
+```
 """
 function h(TT::AbstractVector{type}, a::AbstractVector{type}) where type
     h_RT  = -a[1]*TT[1] + 
@@ -55,8 +61,9 @@ end
     𝜙(TT::AbstractVector{type},a::AbstractVector{type}) where type
 
 Calculates the entropy complement function 𝜙=∫(cₚ/T)dT in J/K/mol
+
 This is calculated at standard state. Tref = 298.15 K, Pref = 101325 Pa.
-```math
+```
 S0/R = -a1*T^-2/2 - a2*T^-1 + a3*ln(T) + a4*T + a5*T^2/2 + a6*T^3/3.0 + a7*T^4/4 + b2 
      = -a1*T₁/2   - a2*T₂   + a3*T₈    + a4*T₄+ a5*T₅/2  + a6*T₆/3.0  + a7*T₇/4  + a₉   
 ```
