@@ -14,3 +14,22 @@ struct species
     MW::Float64
     Hf::Float64
 end
+
+"""
+    generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")
+
+Generates a composite psuedo-species to represent a gas mixture given its
+mole fraction `Xi`
+"""
+function generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")
+    ALOW = reduce(hcat, spdict.alow)
+    AHIGH = reduce(hcat, spdict.ahigh)
+    alow = ALOW * Xi
+    ahigh = AHIGH * Xi
+    MW = dot(spdict.MW, Xi)
+    Hf = dot(spdict.Hf, Xi)
+    Tmid = 1000.0
+
+    return species(name, Tmid, alow, ahigh, MW, Hf)
+
+end  # function generate_composite_species
