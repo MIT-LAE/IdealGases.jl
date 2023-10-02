@@ -241,7 +241,9 @@ include("utils.jl")
 include("idealgasthermo.jl")
 
 """
-Calculates mean molecular weight
+    MW(g::Gas)
+
+Calculates mean molecular weight of the gas
 """
 @views function MW(g::Gas)
    MW = 1/dot(g.Y, 1 ./spdict.MW)
@@ -252,7 +254,8 @@ end
 """
     set_h!(gas::Gas, hspec::Float64)
 
-Calculates gas temperature for a specified enthalpy
+Calculates gas temperature for a specified enthalpy via a non-linear 
+Newton-Raphson method.
 
 # Examples
 ```julia-repl
@@ -360,7 +363,7 @@ end
 """
     compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
-Compression with polytropic efficiency
+Compression with an optional polytropic efficiency
 """
 function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
@@ -397,15 +400,4 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
 end
 
-end
-
-# Y = Dict(  
-# "N2"  => 0.78084,
-# "Ar"  => 0.009365,
-# "Air" => 0.0,
-# "H2O" => 0.0,
-# "CO2" => 0.000319,
-# "O2"  => 0.209476)
-
-# gas = Gas()
 
