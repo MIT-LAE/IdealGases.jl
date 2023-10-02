@@ -1,29 +1,10 @@
-# """
-# Thermally-perfect gas thermodynamics based on NASA polynomials
-# """
-module IdealGas
-
-# using NLsolve
-using LinearAlgebra
-using StaticArrays
-using Printf
-
-export Gas, set_h!, set_hP!, set_TP!, set_Δh!
-
-include("constants.jl")
-include("species.jl")
-export species
-include("readThermo.jl")
-include("combustion.jl")
-
-const __Gasroot__ = @__DIR__
-
 """
     Gas
 
 A type that represents an ideal gas that is calorically perfect 
+i.e. ``c_p(T)``
 """
-mutable struct Gas
+mutable struct Gas{N}
    P::Float64 # [Pa]
    T::Float64 # [K]
    Tarray::MVector{8, Float64} # Temperature array to make calcs allocation free
@@ -33,7 +14,7 @@ mutable struct Gas
    h::Float64  #[J/mol]
    ϕ::Float64  #[J/mol/K] Entropy complement fn ϕ(T) = ∫ cp(T)/T dT from Tref to T
    
-   Y::MVector{length(spdict), Float64} # Mass fraction of species
+   Y::MVector{N, Float64} # Mass fraction of species
    MW::Float64 # Molecular weight [g/mol]
 end
 
@@ -77,13 +58,12 @@ with composition:
 """
 function Gas()
    Air = spdict[findfirst(x->x=="Air", spdict.name)]
-
-   Gas(Pstd, Tstd, Tarray(Tstd),
+   Gas{Nspecies}(Pstd, Tstd, Tarray(Tstd),
     Cp(Tstd, Air), 
     (Cp(Tstd + 1.0, Air) - Cp(Tstd - 1.0, Air)) /2.0, #finite diff dCp/dT
     h(Tstd, Air),
     s(Tstd, Pstd, Air),
-   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0], Air.MW)
+   zeros(Nspecies), Air.MW)
 
 end
 
@@ -235,10 +215,6 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::AbstractDict{String, Floa
    end
    nothing
 end
-
-include("io.jl")
-include("utils.jl")
-include("idealgasthermo.jl")
 
 """
     MW(g::Gas)
