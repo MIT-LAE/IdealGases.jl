@@ -58,3 +58,5 @@ end
 #Read species data from thermo.inp
 const spdict = readThermo(default_thermo_path)
 const Nspecies = length(spdict)
+
+species_in_spdict(name::AbstractString) = spdict[findfirst(x->x==name, spdict.name)]
