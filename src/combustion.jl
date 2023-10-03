@@ -6,6 +6,11 @@ Returns the number of C, H, O, and N atoms that the fuel is composed of.
 """
 function fuelbreakdown(fuel::String)
     C,H,O,N = 0.0, 0.0, 0.0, 0.0
+    if !isempty(findall(r"[^cChHoOnN.^[0-9]",fuel))
+        error("The input fuel string $fuel contains
+        elements other than C,H,O, and N.")
+        return nothing
+    end
     chunks = [fuel[idx] for idx in findall(r"[a-zA-Z][a-z]?\d*\.?\d*", fuel)]
     for chunk in chunks
         element, number = match(r"([a-zA-Z][a-z]?)(\d*\.?\d*)", chunk).captures
