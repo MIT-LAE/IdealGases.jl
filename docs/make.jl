@@ -12,6 +12,7 @@ makedocs(
     pages = ["Home" =>"index.md",
     "Thermodynamic Data" => "readthermo.md",
     "Gas type" => "gas.md",
-    "Ideal gas thermo" => "idealgasthermo.md"]
+    "Ideal gas thermo" => "idealgasthermo.md",
+    "Combustion"=>"combustion.md"]
 
 )
