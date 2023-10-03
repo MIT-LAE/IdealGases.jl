@@ -16,7 +16,7 @@ include("species.jl")
 export species, generate_composite_species
 
 include("readThermo.jl")
-export readThermo
+export readThermo, species_in_spdict
 include("Gas.jl")
 include("combustion.jl")
 
