@@ -18,8 +18,8 @@ end
 """
     generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")
 
-Generates a composite psuedo-species to represent a gas mixture given its
-mole fraction `Xi`
+Generates a composite psuedo-species to represent a gas mixture given the
+mole fraction `Xi` of its constitutents.
 """
 function generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")
     ALOW = reduce(hcat, spdict.alow)
@@ -28,6 +28,16 @@ function generate_composite_species(Xi::AbstractVector, name::AbstractString="co
     ahigh = AHIGH * Xi
     MW = dot(spdict.MW, Xi)
     Hf = dot(spdict.Hf, Xi)
+    # Need to account for the entropy of mixing:
+    Δs_mix = 0.0
+    for i in eachindex(Xi)
+        if Xi[i] != 0.0
+            Δs_mix = Δs_mix + Xi[i]*log(Xi[i])
+        end
+    end
+    # This is independent of temperature represented by the constant of integration:
+    alow[end] = alow[end] - Δs_mix
+    ahigh[end] = ahigh[end] - Δs_mix
     Tmid = 1000.0
 
     return species(name, Tmid, alow, ahigh, MW, Hf)
