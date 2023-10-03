@@ -13,6 +13,7 @@ struct species
     ahigh::Array{Float64, 1}
     MW::Float64
     Hf::Float64
+    formula::AbstractString
 end
 
 """
@@ -40,6 +41,6 @@ function generate_composite_species(Xi::AbstractVector, name::AbstractString="co
     ahigh[end] = ahigh[end] - Δs_mix
     Tmid = 1000.0
 
-    return species(name, Tmid, alow, ahigh, MW, Hf)
+    return species(name, Tmid, alow, ahigh, MW, Hf, name)
 
 end  # function generate_composite_species

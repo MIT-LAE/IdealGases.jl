@@ -5,15 +5,15 @@
 Returns the number of C, H, O, and N atoms that the fuel is composed of.
 """
 function fuelbreakdown(fuel::String)
-    C,H,O,N = 0, 0, 0, 0
-    chunks = [fuel[idx] for idx in findall(r"[A-Z][a-z]?\d*", fuel)]
+    C,H,O,N = 0.0, 0.0, 0.0, 0.0
+    chunks = [fuel[idx] for idx in findall(r"[a-zA-Z][a-z]?\d*\.?\d*", fuel)]
     for chunk in chunks
-        element, number = match(r"([A-Z][a-z]?)(\d*)", chunk).captures
-
+        element, number = match(r"([a-zA-Z][a-z]?)(\d*\.?\d*)", chunk).captures
+        element = uppercase(element)
         if isempty(number)
             number = 1
         else
-            number = parse(Int, number)
+            number = parse(Float64, number)
         end
         if element == "C"
             C = C + number
