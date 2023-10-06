@@ -1,12 +1,6 @@
 @testset "composite sp." begin
     gas = Gas()
-    gas.X = Xair = Dict(
-        "N2" => 0.78084,
-        "Ar" => 0.009365,
-        "Air" => 0.0,
-        "H2O" => 0.0,
-        "CO2" => 0.000319,
-        "O2" => 0.209476)
+    gas.X = Xair = IdealGases.Xair
 
     gas.T = T = IdealGases.Tstd
     gas.P = P = IdealGases.Pstd

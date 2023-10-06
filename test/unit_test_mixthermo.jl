@@ -17,7 +17,7 @@
         "CO2" => 0.000484688,
         "N2" => 0.755184)
 
-    gas.X = Xair
+    gas.X = IdealGases.Xair
 
     for (x1, x2) in zip(gas.X, X)
         @test x1 == x2
@@ -35,13 +35,7 @@ end
 
 @testset "mix. thermo" begin
     gas = Gas()
-    gas.X = Xair = Dict(
-        "N2" => 0.78084,
-        "Ar" => 0.009365,
-        "Air" => 0.0,
-        "H2O" => 0.0,
-        "CO2" => 0.000319,
-        "O2" => 0.209476)
+    gas.X = Xair = IdealGases.Xair
 
     Air = species_in_spdict("Air")
 
