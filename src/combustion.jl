@@ -3,13 +3,39 @@
     fuelbreakdown(fuel::String)
 
 Returns the number of C, H, O, and N atoms that the fuel is composed of.
+
+# Examples
+```julia-repl
+
+julia> IdealGases.fuelbreakdown("CH4")' #transpose is simply to save space in the docs
+1×4 adjoint(::Vector{Float64}) with eltype Float64:
+ 1.0  4.0  0.0  0.0
+
+julia> IdealGases.fuelbreakdown("C12H23.5")'
+1×4 adjoint(::Vector{Float64}) with eltype Float64:
+ 12.0  23.5  0.0  0.0
+
+julia> IdealGases.fuelbreakdown("CH3COOH")'
+1×4 adjoint(::Vector{Float64}) with eltype Float64:
+ 2.0  4.0  2.0  0.0
+
+julia> IdealGases.fuelbreakdown("CH3CH2OH")'
+1×4 adjoint(::Vector{Float64}) with eltype Float64:
+ 2.0  6.0  1.0  0.0
+ ```
 """
 function fuelbreakdown(fuel::String)
     C,H,O,N = 0.0, 0.0, 0.0, 0.0
     if !isempty(findall(r"[^cChHoOnN.^[0-9]",fuel))
-        error("The input fuel string $fuel contains
-        elements other than C,H,O, and N.")
-        return nothing
+        try
+            fuel = species_in_spdict(fuel).formula 
+        catch e
+            if isa(e, ArgumentError)
+                error("""The input fuel string $fuel is not found in 
+                the thermo database and contains
+                elements other than C,H,O, and N.\n""")
+            end
+        end
     end
     chunks = [fuel[idx] for idx in findall(r"[a-zA-Z][a-z]?\d*\.?\d*", fuel)]
     for chunk in chunks
@@ -35,6 +61,8 @@ function fuelbreakdown(fuel::String)
     return([C, H, O, N])
 
 end 
+
+fuelbreakdown(fuel::species) = fuelbreakdown(fuel.formula)
 
 """
     reaction_change_fraction(fuel::String)
