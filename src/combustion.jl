@@ -113,6 +113,26 @@ function reaction_change_fraction(fuel::String)
 end
 
 """
+    reaction_change_molar_fraction(fuel::AbstractString)
+
+Returns the mole fraction change due to complete combustion of one mole of
+the specified fuel
+
+Assume fuel of type  CᵢHⱼOₖNₗ , then
+```
+    CᵢHⱼOₖNₗ + n(O2) * O2 ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2
+  ⟹CᵢHⱼOₖNₗ              ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2 - n(O2)*O2 
+```
+
+# Examples
+```julia-repl
+julia> IdealGases.reaction_change_molar_fraction("CH4")
+4-element Vector{Float64}:
+  1.0
+  0.0
+  2.0
+ -2.0
+ ```
 """
 function reaction_change_molar_fraction(fuel::AbstractString)
     CHON = fuelbreakdown(fuel) # Returns number of C, H, O, and N atoms in fuel
@@ -123,9 +143,6 @@ function reaction_change_molar_fraction(fuel::AbstractString)
     nO2  = - (CHON[1] + CHON[2]/4 - CHON[3]/2) # Oxygen is used up/ lost
 
     X = [nCO2, nN2, nH2O, nO2]
-    # return as dict to make it easier to set Gas mass fractions
-    # names = ["CO2", "N2", "H2O", "O2"]
-    # Xdict = Dict(zip(names, X))
     return X
 end  # function reaction_change_molar_fraction
 
