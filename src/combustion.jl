@@ -215,20 +215,81 @@ stoich_FOR(fuel::AbstractString, oxi::AbstractString) =
 stoich_FOR(species_in_spdict(fuel), species_in_spdict(oxi))
 
 """
-"""
-function vitiated_mixture(fuel::species, oxidizer::species, 
+    vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies, 
     FAR::Float64, ηburn::Float64=1.0)
+
+Calculates the composition of a burnt gas mixture. Defaults to stoichiometric 
+conditions if FAR is not specified. `vitiated_mixture` returns the number of 
+moles of each species present in the burnt gas mixture after combustion at the 
+specified FAR. *Note* the sum of result in general will **not** sum to 1. 
+
+# Examples
+```julia-repl
+julia> CH4 = species_in_spdict("CH4");
+
+julia> Air = IdealGases.DryAir;
+
+julia> IdealGases.vitiated_mixture(CH4, Air, 0.04)
+Dict{Any, Any} with 6 entries:
+  "O2"  => 0.0650337
+  "CH4" => 0.0
+  "Ar"  => 0.009365
+  "H2O" => 0.144442
+  "CO2" => 0.0725401
+  "N2"  => 0.78084
+
+julia> IdealGases.vitiated_mixture(CH4, Air)
+Dict{Any, Any} with 6 entries:
+  "O2"  => 0.0
+  "CH4" => 0.0
+  "Ar"  => 0.009365
+  "H2O" => 0.209476
+  "CO2" => 0.105057
+  "N2"  => 0.78084
+```
+See [here](@ref vitiated) for some explanation of the background.
+"""
+function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies, 
+    FAR::Float64, ηburn::Float64=1.0)
+
+    if typeof(oxidizer)== species && oxidizer.name == "Air"
+        Xin = Xair
+    else
+        Xin = oxidizer.composition
+    end
 
     molFAR = FAR * oxidizer.MW/fuel.MW
 
     nCO2, nN2, nH2O, nO2 = ηburn .* molFAR .* reaction_change_molar_fraction(fuel.name)
 
-    names = [oxidizer.name,   fuel.name, "CO2", "H2O", "N2", "O2"]
-    ΔX    = [          1.0, 1.0 - ηburn,  nCO2,  nH2O,  nN2,  nO2]
+    names = [  fuel.name, "CO2", "H2O", "N2", "O2"]
+    ΔX    = [1.0 - ηburn,  nCO2,  nH2O,  nN2,  nO2]
 
     Xdict = Dict(zip(names, ΔX))
-    return Xdict
+    
+    Xvitiated = mergewith(+, Xin, Xdict)
+
+    return Xvitiated
 end  # function vitiated_gas
+
+vitiated_mixture(fuel, oxidizer) = 
+vitiated_mixture(fuel, oxidizer, stoich_FOR(fuel, oxidizer))
+
+"""
+    vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString, 
+    FAR::Float64, ηburn::Float64=1.0)
+
+Convinence function that finds fuel and oxidizer from thermo database
+"""
+function vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString, 
+    FAR::Float64, ηburn::Float64=1.0)
+
+    fuel = species_in_spdict(fuel)
+    oxidizer = species_in_spdict(oxidizer)
+
+    return vitiated_mixture(fuel, oxidizer, FAR, ηburn)
+    
+end  # function vitiated_mixture
 
 """
 """
