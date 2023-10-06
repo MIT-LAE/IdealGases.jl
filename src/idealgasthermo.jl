@@ -85,11 +85,11 @@ end
 # For individual species:
 
 """
-    Cp(T, sp::species)
+    Cp(T, sp::AbstractSpecies)
 
 Calculates cp for a **species** type in J/K/kg.
 """
-function Cp(T, sp::species)
+function Cp(T, sp::AbstractSpecies)
    TT = Tarray(T)
    if T<1000.0
       s = :alow
@@ -102,11 +102,11 @@ function Cp(T, sp::species)
 end
 
 """
-    h(T, sp::species)
+    h(T, sp::AbstractSpecies)
 
 Calculates h for a species in J/kg
 """
-function h(T, sp::species)
+function h(T, sp::AbstractSpecies)
    TT = Tarray(T)
    if T<1000.0
       s = :alow
@@ -118,11 +118,11 @@ function h(T, sp::species)
 end
 
 """
-    s(T, P, sp::species)
+    s(T, P, sp::AbstractSpecies)
 
 Calculates s for a species in J/K/kg
 """
-function s(T, P, sp::species)
+function s(T, P, sp::AbstractSpecies)
    TT = Tarray(T)
    if T<1000.0
       s = :alow
