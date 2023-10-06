@@ -13,7 +13,7 @@ export Gas, set_h!, set_hP!, set_TP!, set_Δh!
 
 include("constants.jl")
 include("species.jl")
-export species, generate_composite_species
+export AbstractSpecies, species, composite_species, generate_composite_species
 
 include("readThermo.jl")
 export readThermo, species_in_spdict
