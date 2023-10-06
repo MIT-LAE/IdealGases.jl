@@ -146,6 +146,73 @@ function reaction_change_molar_fraction(fuel::AbstractString)
     return X
 end  # function reaction_change_molar_fraction
 
+"""
+    stoich_molar_fuel_oxy_ratio(fuel::AbstractString)
+
+Calculates the molar fuel-**oxygen** ratio for stoichiometric combustion.
+
+# Examples
+```julia-repl
+julia> using IdealGases
+
+julia> IdealGases.stoich_molar_fuel_oxy_ratio("CH4")
+0.5
+
+julia> IdealGases.stoich_molar_fuel_oxy_ratio("C12H23")
+0.056338028169014086
+```
+"""
+function stoich_molar_fuel_oxy_ratio(fuel::AbstractString)
+    X = reaction_change_molar_fraction(fuel)
+    molFuelOxyRatio = abs(1/X[end])
+    return molFuelOxyRatio
+end  # function stoich_molar_FAR
+
+"""
+    stoich_molar_FOR(fuel::AbstractSpecies, oxidizer::AbstractSpecies)
+
+Calculates the **molar** fuel-oxidizer ratio for stoichiometeric combustion for 
+and arbitrary fuel and oxidizer.
+
+# Examples
+```julia-repl
+julia> CH4 = species_in_spdict("CH4");
+
+julia> IdealGases.stoich_molar_FOR(CH4)
+0.104738
+```
+"""
+function stoich_molar_FOR(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
+    molFuelOxyRatio = stoich_molar_fuel_oxy_ratio(fuel.name)
+    if typeof(oxidizer)== species && oxidizer.name == "Air"
+        Xin = Xair
+    else
+        Xin = oxidizer.composition
+    end
+
+    return molFuelOxyRatio * Xin["O2"]
+
+end  # function stoich_molar_FOR 
+
+"""
+    stoich_FOR(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
+
+Calculates the **mass** fuel-oxidizer ratio for stoichiometeric combustion for 
+and arbitrary fuel and oxidizer.
+
+# Examples
+```julia-repl
+julia> IdealGases.stoich_FOR(CH4)
+0.05800961333050494
+```
+"""
+function stoich_FOR(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
+    molFOR = stoich_molar_FOR(fuel, oxidizer)
+    return molFOR * fuel.MW/oxidizer.MW
+end  # function stoich_FOR
+
+stoich_FOR(fuel::AbstractString, oxi::AbstractString) = 
+stoich_FOR(species_in_spdict(fuel), species_in_spdict(oxi))
 
 """
 """
