@@ -7,7 +7,6 @@ const ϵ = sqrt(eps()) #standard tolerance
 const Xair = Dict(  
 "N2"  => 0.78084,
 "Ar"  => 0.009365,
-"Air" => 0.0,
 "H2O" => 0.0,
 "CO2" => 0.000319,
 "O2"  => 0.209476)
