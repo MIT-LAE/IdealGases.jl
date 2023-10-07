@@ -262,8 +262,10 @@ function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
 
     nCO2, nN2, nH2O, nO2 = ηburn .* molFAR .* reaction_change_molar_fraction(fuel.name)
 
-    names = [  fuel.name, "CO2", "H2O", "N2", "O2"]
-    ΔX    = [1.0 - ηburn,  nCO2,  nH2O,  nN2,  nO2]
+    nFuel = molFAR*(1.0 - ηburn)
+    
+    names = [fuel.name, "CO2", "H2O", "N2", "O2"]
+    ΔX    = [    nFuel,  nCO2,  nH2O,  nN2,  nO2]
 
     Xdict = Dict(zip(names, ΔX))
     
