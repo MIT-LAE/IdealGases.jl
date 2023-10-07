@@ -26,7 +26,9 @@ include("utils.jl")
 export X2Y, Y2X
 include("idealgasthermo.jl")
 
-
-
+gas = Gas()
+gas.X = Xair
+const DryAir = generate_composite_species(gas.X, "Dry Air")
+export DryAir
 
 end
