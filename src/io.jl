@@ -1,4 +1,31 @@
 """
+    Base.show(io::IO, sp::species)
+
+Shows a simplified representation of the `species` instance.
+"""
+function Base.show(io::IO, sp::species)
+    println(io, "Species \"$(sp.name)\"\nMW = $(sp.MW) g/mol")
+end
+"""
+    Base.show(io::IO, sp::composite_species)
+
+Shows a simplified representation of the `composite_species` instance.
+"""
+function Base.show(io::IO, sp::composite_species)
+    divider = "-"^(8*2+2*1)
+    print(io, "Composite Species: \"$(sp.name)\"\nMW = $(sp.MW) g/mol\nwith composition:\n")
+    @printf(io, "%8s  %8s\n", "Species", "Xᵢ")
+    S = 0.0
+    for (name, Xi) in sp.composition
+        if Xi != 0
+            @printf(io, "%8s  %8.5f\n", name, Xi)
+            S += Xi
+        end
+    end
+    println(divider)
+    @printf(io, "%8s  %8.5f\n", "Σ", S)
+end
+"""
     Base.show(io::IO, gas::Gas)
 
 Shows a simplified representation of the `Gas` instance.
