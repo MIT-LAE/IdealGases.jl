@@ -20,6 +20,15 @@ struct species <: AbstractSpecies
     formula::AbstractString
 end
 
+"""
+    composite_species <: AbstractSpecies
+
+composite_species represents a gas mixture of multiple components as a 
+psuedo-species by calculating an equivalent set of polynomials 
+defining ``c_p``, ``h``, and ``s``.  
+
+See [here](@ref vitiated) for a more detailed explanation.
+"""
 struct composite_species <: AbstractSpecies
     name::String
     Tmid::Float64
