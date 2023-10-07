@@ -22,7 +22,8 @@ julia> IdealGases.fuelbreakdown("CH3COOH")'
 julia> IdealGases.fuelbreakdown("CH3CH2OH")'
 1×4 adjoint(::Vector{Float64}) with eltype Float64:
  2.0  6.0  1.0  0.0
- ```
+
+```
 """
 function fuelbreakdown(fuel::String)
     C,H,O,N = 0.0, 0.0, 0.0, 0.0
@@ -121,7 +122,7 @@ the specified fuel
 Assume fuel of type  CᵢHⱼOₖNₗ , then
 ```
     CᵢHⱼOₖNₗ + n(O2) * O2 ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2
-  ⟹CᵢHⱼOₖNₗ              ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2 - n(O2)*O2 
+   ⟹CᵢHⱼOₖNₗ              ---> n(CO2)*CO2 + n(H2O)*H2O + n(N2)*N2 - n(O2)*O2 
 ```
 
 # Examples
@@ -132,7 +133,7 @@ julia> IdealGases.reaction_change_molar_fraction("CH4")
   0.0
   2.0
  -2.0
- ```
+```
 """
 function reaction_change_molar_fraction(fuel::AbstractString)
     CHON = fuelbreakdown(fuel) # Returns number of C, H, O, and N atoms in fuel
@@ -184,8 +185,11 @@ julia> IdealGases.stoich_molar_FOR(CH4)
 """
 function stoich_molar_FOR(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
     molFuelOxyRatio = stoich_molar_fuel_oxy_ratio(fuel.name)
-    if typeof(oxidizer)== species && oxidizer.name == "Air"
-        Xin = Xair
+    if typeof(oxidizer)== species
+        Xin = Dict(oxidizer.name => 1.0)
+        if oxidizer.name == "Air"
+            Xin = Xair
+        end
     else
         Xin = oxidizer.composition
     end
@@ -252,8 +256,11 @@ See [here](@ref vitiated) for some explanation of the background.
 function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies, 
     FAR::Float64, ηburn::Float64=1.0)
 
-    if typeof(oxidizer)== species && oxidizer.name == "Air"
-        Xin = Xair
+    if typeof(oxidizer)== species
+        Xin = Dict(oxidizer.name => 1.0)
+        if oxidizer.name == "Air"
+            Xin = Xair
+        end
     else
         Xin = oxidizer.composition
     end
@@ -263,7 +270,7 @@ function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
     nCO2, nN2, nH2O, nO2 = ηburn .* molFAR .* reaction_change_molar_fraction(fuel.name)
 
     nFuel = molFAR*(1.0 - ηburn)
-    
+
     names = [fuel.name, "CO2", "H2O", "N2", "O2"]
     ΔX    = [    nFuel,  nCO2,  nH2O,  nN2,  nO2]
 
@@ -294,27 +301,59 @@ function vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString,
 end  # function vitiated_mixture
 
 """
-"""
-function vitiated_species(fuel::species, oxidizer::species, 
+    vitiated_species(fuel::AbstractSpecies, oxidizer::AbstractSpecies, 
     FAR::Float64, ηburn::Float64=1.0, name::AbstractString="vitiated species")
+
+Returns a [`composite_species`](@ref) that represents the burnt gas mixture
+at the specified FAR. If no FAR is provided stoichiometeric conditions are
+assumed. 
+
+# Examples
+```julia-repl
+julia> IdealGases.vitiated_species(CH4, Air, 0.05, name = "CH4-Air-0.05")
+Composite Species: "CH4-Air-0.05"
+MW = 27.89510190126262 g/mol
+with composition:
+ Species        Xᵢ
+      O2   0.02653
+      Ar   0.00859
+     H2O   0.16560
+     CO2   0.08309
+      N2   0.71619
+------------------
+       Σ   1.00000
+```
+"""
+function vitiated_species(fuel::AbstractSpecies, oxidizer::AbstractSpecies, 
+    FAR::Float64; ηburn::Float64=1.0, name::AbstractString="vitiated species")
     
-    names = spdict.name
     Xdict = vitiated_mixture(fuel, oxidizer, FAR, ηburn)
+    molFAR = FAR * oxidizer.MW/fuel.MW
+    totalmoles = 1 + molFAR
+    names = spdict.name
+    println(Xdict)
     X = zeros(MVector{length(names), Float64})
+    S = 0.0
     for (key,value) in Xdict
        index = findfirst(x->x==key, names)
-       X[index] = value
+       X[index] = value/totalmoles
+       S+=value
     end
-
+    # println("$S, $molFAR, $(S-totalmoles)")
     return generate_composite_species(X,name)
 end  # function vitiated_species
 
 function vitiated_species(fuel::AbstractString, oxidizer::AbstractString, 
-    FAR::Float64, ηburn::Float64=1.0, name::AbstractString="vitiated species")
+    FAR::Float64; ηburn::Float64=1.0, name::AbstractString="vitiated species")
 
-    o = spdict[findfirst(x->x==oxidizer, spdict.name)]
-    f = spdict[findfirst(x->x==fuel, spdict.name)]
-    return vitiated_species(f, o, 
-    FAR, ηburn,  name)
+    fuel = species_in_spdict(fuel)
+    oxidizer = species_in_spdict(oxidizer)
+    return vitiated_species(fuel, oxidizer, FAR; ηburn=ηburn,  name=name)
 
 end
+
+vitiated_species(f::AbstractSpecies,o::AbstractSpecies) = 
+vitiated_species(f, o, stoich_FOR(f, o))
+
+vitiated_species(f::AbstractString,o::AbstractString) = 
+vitiated_species(f, o, stoich_FOR(f, o))
