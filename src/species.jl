@@ -52,7 +52,7 @@ function generate_composite_species(Xi::AbstractVector, name::AbstractString="co
     # This is independent of temperature represented by the constant of integration:
     alow[end] = alow[end] - Δs_mix
     ahigh[end] = ahigh[end] - Δs_mix
-    Tmid = 1000.0
+    Tmid = 1000.0 #Assumed to always be the mid (this is checked for all input thermo when read)
     # comp
     d = Dict()
     if !(sum(Xi) ≈ 1.0)
