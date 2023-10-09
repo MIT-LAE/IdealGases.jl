@@ -62,3 +62,102 @@
 
 
 end
+
+@testset "Gas1D" begin
+
+    #Test with Dry Air first
+    gas = Gas()
+    gas1 = Gas1D()
+
+    gas.X = Xair
+    @test gas.MW ≈ gas1.comp_sp.MW
+    gas.T = gas1.T = 2000.0
+    @test gas.T == gas1.T
+    @test gas.cp ≈ gas1.cp
+    @test gas.h ≈ gas1.h
+    @test gas.s ≈ gas1.s
+    
+    gas.h = gas1.h = -2000.0
+    @test gas.T ≈ gas1.T
+    @test gas.cp ≈ gas1.cp
+    @test gas.h ≈ gas1.h
+    @test gas.s ≈ gas1.s
+
+    Xburnt = IdealGases.vitiated_mixture("CH4", "Air", 0.05)
+    burntgas = IdealGases.vitiated_species("CH4", "Air", 0.05)
+
+    gas.X = Xburnt
+    gas1.comp_sp = burntgas
+    #Test composition first
+    @test gas.MW ≈ gas1.comp_sp.MW
+    for (key, val) in gas.Xdict
+        @test gas.Xdict[key] ≈ gas1.comp_sp.composition[key]
+    end
+
+    Tstd, Pstd = IdealGases.Tstd, IdealGases.Pstd
+    #Test a wide range of T,P
+    for Ti in range(100.0, 3000.0, length = 5)
+        gas.T = gas1.T = Ti
+        @test gas.T == gas1.T
+        @test gas.cp ≈ gas1.cp
+        @test gas.h ≈ gas1.h
+        for Pi in range(Pstd, 30*Pstd, length = 5)
+            gas.P = gas1.P = Pi
+            @test gas.s ≈ gas1.s
+        end
+    end
+
+    gas.P = gas1.P = Pstd
+    for hi in range(-5e3, 5e6, length = 10)
+        gas.h = gas1.h = hi
+        @test gas.h ≈ gas1.h
+        @test gas.T ≈ gas1.T
+        @test gas.cp ≈ gas1.cp
+        @test gas.s ≈ gas1.s
+    end
+    
+    #Test setting T,P together
+    set_TP!(gas, Tstd, Pstd)
+    set_TP!(gas1, Tstd, Pstd)
+    @test gas.h ≈ gas1.h
+    @test gas.T ≈ gas1.T
+    @test gas.cp ≈ gas1.cp
+    @test gas.s ≈ gas1.s
+
+    #Test finite Δh increase at a given poly eff
+    ηp = 0.95
+    set_Δh!(gas, 200.0, ηp)
+    set_Δh!(gas1, 200.0, ηp)
+    @test gas.h ≈ gas1.h
+    @test gas.T ≈ gas1.T
+    @test gas.cp ≈ gas1.cp
+    @test gas.s ≈ gas1.s
+
+    #Test compression at given poly eff
+    set_TP!(gas, Tstd, Pstd)
+    set_TP!(gas1, Tstd, Pstd)
+    PR = 10.0
+    IdealGases.compress(gas, PR, ηp)
+    IdealGases.compress(gas1, PR, ηp)
+    @test gas.P ≈ Pstd*PR
+    @test gas1.P ≈ Pstd*PR
+    @test gas.h ≈ gas1.h
+    @test gas.T ≈ gas1.T
+    @test gas.cp ≈ gas1.cp
+    @test gas.s ≈ gas1.s
+
+    # Test expansion
+    set_TP!(gas, Tstd, Pstd)
+    set_TP!(gas1, Tstd, Pstd)
+    PR = 0.5
+    IdealGases.expand(gas, PR, ηp)
+    IdealGases.expand(gas1, PR, ηp)
+    @test gas.P ≈ Pstd*PR
+    @test gas1.P ≈ Pstd*PR
+    @test gas.T < Tstd
+    @test gas1.T < Tstd
+    @test gas.h ≈ gas1.h
+    @test gas.T ≈ gas1.T
+    @test gas.cp ≈ gas1.cp
+    @test gas.s ≈ gas1.s
+end
