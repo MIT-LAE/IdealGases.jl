@@ -21,6 +21,14 @@ function Gas1D()
     s(Tstd, Pstd, DryAir))
 end
 
+function Gas1D(sp::composite_species)
+    Gas1D(sp, Pstd, Tstd, Tarray(Tstd), 
+    Cp(Tstd, sp), 
+    (Cp(Tstd + 1.0, sp) - Cp(Tstd - 1.0, sp)) /2.0,
+    h(Tstd, sp),
+    s(Tstd, Pstd, sp))
+end
+
 function Base.setproperty!(gas::Gas1D, sym::Symbol, val::Float64)
     ## Setting Temperature
     if sym === :T
