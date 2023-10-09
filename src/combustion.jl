@@ -331,15 +331,13 @@ function vitiated_species(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
     molFAR = FAR * oxidizer.MW/fuel.MW
     totalmoles = 1 + molFAR
     names = spdict.name
-    println(Xdict)
+
     X = zeros(MVector{length(names), Float64})
-    S = 0.0
     for (key,value) in Xdict
        index = findfirst(x->x==key, names)
        X[index] = value/totalmoles
-       S+=value
     end
-    # println("$S, $molFAR, $(S-totalmoles)")
+    
     return generate_composite_species(X,name)
 end  # function vitiated_species
 
