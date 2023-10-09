@@ -355,3 +355,61 @@ vitiated_species(f, o, stoich_FOR(f, o))
 
 vitiated_species(f::AbstractString,o::AbstractString) = 
 vitiated_species(f, o, stoich_FOR(f, o))
+
+"""
+    fixed_fuel_vitiated_species(fuel, oxidizer, ηburn::Float64=1.0)
+
+Returns a function `burntgas(FAR::Float64)` that is specific to the fuel and oxidizer
+combination provided. This gives a highly performant function that can 
+simply be called at any given FAR for that specific fuel+oxidizer combo.
+
+This is ~4x faster than doing 
+```burntgas(FAR) = vitiated_species("CH4", "Air", FAR)```
+
+"""
+function fixed_fuel_vitiated_species(fuel, oxidizer, ηburn::Float64=1.0)
+
+    nCO2, nN2, nH2O, nO2 = ηburn .* reaction_change_molar_fraction(fuel.name)
+    nFuel = (1.0 - ηburn)
+    massratio =  oxidizer.MW/fuel.MW
+    if typeof(oxidizer)== species
+        Xin::Dict{String, Float64} = Dict(oxidizer.name => 1.0)
+        if oxidizer.name == "Air"
+            Xin = Xair
+        end
+    else
+        Xin = oxidizer.composition
+    end
+    names::Vector{String} = [fuel.name, "CO2", "H2O", "N2", "O2"]
+    ΔX::Vector{Float64}   = [nFuel,  nCO2,  nH2O,  nN2,  nO2]
+    Xdict::Dict{String, Float64} = Dict(zip(names, ΔX))
+
+    ΔX_array = zeros(Float64, Nspecies)
+    Xin_array = zeros(Float64, Nspecies)
+    allnames = view(spdict.name, :)
+
+    for (key,value) in Xdict
+        index::Int64 = findfirst(x->x==key, allnames)
+        ΔX_array[index] = value
+    end
+
+    for (key,value) in Xin
+        index::Int64 = findfirst(x->x==key, allnames)
+        Xin_array[index] = value
+    end
+
+    """
+       burntgas(FAR::Float64)
+    Inner function that will be returned
+    """
+    function burntgas(FAR::Float64) 
+        molFAR = FAR.*massratio
+        X = ΔX_array.* molFAR
+        @. X = (X + Xin_array)/(1+molFAR)
+        generate_composite_species(X,
+        "burntgas($(fuel.name) + $(oxidizer.name); $FAR)")
+
+    end  # function burntgas
+
+    return burntgas
+end  # function fixed_fuel_vitiated_species
