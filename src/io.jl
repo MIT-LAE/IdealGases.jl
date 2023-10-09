@@ -35,6 +35,14 @@ function Base.show(io::IO, gas::Gas)
 end
 
 """
+    Base.show(io::IO, gas::Gas1D)
+
+Shows a simplified representation of the `Gas1D` instance.
+"""
+function Base.show(io::IO, gas::Gas1D)
+    print(io, "Gas1D($(gas.comp_sp.name); MW = $(gas.comp_sp.MW) g/mol)\nat T = $(gas.T) K; P = $(gas.P/1000.0) kPa")
+end
+"""
     Base.print(io::IO, gas::Gas)
 
 Pretty print for `Gas` instance
