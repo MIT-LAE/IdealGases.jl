@@ -1,4 +1,8 @@
+"""
+    Gas1D
 
+Type that represents single component gases.
+"""
 mutable struct Gas1D <: AbstractGas
     comp_sp::composite_species
     P::Float64 # [Pa]
@@ -13,6 +17,14 @@ mutable struct Gas1D <: AbstractGas
 
 end
 
+"""
+    Gas1D()
+
+Constructor that returns a `Gas1D` type representing 
+Dry Air at standard conditions
+
+See also [`Gas1D`](@ref).
+"""
 function Gas1D()
     Gas1D(DryAir, Pstd, Tstd, Tarray(Tstd), 
     Cp(Tstd, DryAir), 
@@ -21,6 +33,14 @@ function Gas1D()
     s(Tstd, Pstd, DryAir))
 end
 
+"""
+    Gas1D(sp::composite_species)
+
+Constructor that returns a `Gas` type representing 
+Dry Air at standard conditions
+
+See also [`Gas1D`](@ref).
+"""
 function Gas1D(sp::composite_species)
     Gas1D(sp, Pstd, Tstd, Tarray(Tstd), 
     Cp(Tstd, sp), 

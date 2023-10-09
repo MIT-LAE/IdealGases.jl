@@ -8,12 +8,13 @@ using Documenter
 
 makedocs(
     remotes=nothing,
-    sitename="IdealGases.jl documentation",
+    sitename="IdealGases.jl",
     pages=["Home" => "index.md",
         "Thermodynamic Data" => "readthermo.md",
         "Gas and Species" => "gas.md",
-        "Ideal gas thermo" => "idealgasthermo.md",
-        "Combustion" => "combustion.md"], 
+        "Ideal gas thermodynamics" => "idealgasthermo.md",
+        "Combustion" => "combustion.md",
+        "Performance benchmarks" => "benchmark.md"], 
 
     format = Documenter.HTML(; mathengine=
         Documenter.KaTeX(

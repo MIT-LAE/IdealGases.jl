@@ -23,7 +23,7 @@ end
 """
     composite_species <: AbstractSpecies
 
-composite_species represents a gas mixture of multiple components as a 
+Represents a gas mixture of multiple components as a 
 psuedo-species by calculating an equivalent set of polynomials 
 defining ``c_p``, ``h``, and ``s``.  
 

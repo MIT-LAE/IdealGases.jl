@@ -257,7 +257,7 @@ end
 
 
 """
-    set_h!(gas::Gas, hspec::Float64)
+    set_h!(gas::AbstractGas, hspec::Float64)
 
 Calculates gas temperature for a specified enthalpy via a non-linear 
 Newton-Raphson method.
@@ -307,7 +307,7 @@ function set_h!(gas::AbstractGas, hspec::Float64)
    return gas
 end
 """
-    set_Δh!(gas::Gas, Δhspec::Float64, ηp::Float64 = 1.0)
+    set_Δh!(gas::AbstractGas, Δhspec::Float64, ηp::Float64 = 1.0)
 
 Sets the gas state based on a specified change in enthalpy (Δh) [J/mol],
 and a given polytropic efficiency. This represents adding or removing some work
@@ -322,7 +322,7 @@ function set_Δh!(gas::AbstractGas, Δhspec::Float64, ηp::Float64 = 1.0)
    return gas
 end
 """
-    set_hP!(gas::Gas, hspec::Float64, P::Float64)
+    set_hP!(gas::AbstractGas, hspec::Float64, P::Float64)
 
 Calculates state of the gas given enthalpy and pressure (h,P)
 """
@@ -332,7 +332,7 @@ function set_hP!(gas::AbstractGas, hspec::Float64, P::Float64)
    return gas
 end
 """
-    set_TP!(gas::Gas, T::Float64, P::Float64)
+    set_TP!(gas::AbstractGas, T::Float64, P::Float64)
 
 Calculates state of the gas given Temperature and pressure (T,P)
 in K and Pa respectively.
@@ -366,7 +366,7 @@ end
 
 
 """
-    compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
+    compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
 
 Compression with an optional polytropic efficiency
 """

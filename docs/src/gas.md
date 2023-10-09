@@ -1,16 +1,8 @@
 # Representing ideal gases
 
-## Gas mixtures
-`IdealGases.jl` exports the `Gas` type which stores relevant thermodynamic
-information about the gas mixture.
-
-```@docs
-Gas
-Gas()
-Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
-```
-
-## Pure (single-component gases)
+## Pure (single-component) gases
+`IdealGases.jl` exports the `species` type which stores relevant thermodynamic
+information about a single element/compound. See [`readThermo`](@ref).
 
 ```@docs
 species
@@ -21,7 +13,25 @@ species
 ```@docs
 composite_species
 ```
+## Gas mixtures
+`IdealGases.jl` exports the `Gas` type which stores relevant thermodynamic
+information about the gas mixture.
 
+```@docs
+Gas
+Gas()
+Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
+```
+
+## Single component gases
+
+`Gas1D` type objects are a subtype of `AbstractGas` which allows us to use most of the functions that work with [`Gas`](@ref). `Gas1D` types additionally store a representation of the composite species ([`composite_species`](@ref)).
+
+```@docs
+Gas1D
+Gas1D()
+Gas1D(sp::composite_species)
+```
 ## Setting the thermodynamic state of the gas
 
 The following functions let you set the thermodynamic state of the gas. 

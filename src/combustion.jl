@@ -366,6 +366,28 @@ simply be called at any given FAR for that specific fuel+oxidizer combo.
 This is ~4x faster than doing 
 ```burntgas(FAR) = vitiated_species("CH4", "Air", FAR)```
 
+## Examples
+```julia-repl
+julia> burntgas = IdealGases.fixed_fuel_vitiated_species(CH4, Air)
+(::IdealGases.var"#burntgas#52"{species, composite_species, Vector{Float64}, Vector{Float64}, Float64}) (generic function with 1 method)
+
+julia> burntgas(0.05)
+Composite Species: "burntgas(CH4 + Dry Air; 0.05)"
+MW = 27.89510190126262 g/mol
+with composition:
+ Species        Xᵢ
+      O2   0.02653
+      Ar   0.00859
+     H2O   0.16560
+     CO2   0.08309
+      N2   0.71619
+------------------
+       Σ   1.00000
+
+julia> gas1 = Gas1D(burntgas(0.02)) #Returns a Gas1D intialized with the burnt gas properties
+Gas1D(burntgas(CH4 + Dry Air; 0.02); MW = 28.51473501878705 g/mol)
+at T = 298.15 K; P = 101.325 kPa
+```
 """
 function fixed_fuel_vitiated_species(fuel, oxidizer, ηburn::Float64=1.0)
 

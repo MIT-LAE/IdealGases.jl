@@ -113,4 +113,5 @@ f
 ```@docs
 IdealGases.vitiated_mixture
 IdealGases.vitiated_species
+IdealGases.fixed_fuel_vitiated_species
 ```
