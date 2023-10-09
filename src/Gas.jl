@@ -1,10 +1,11 @@
+abstract type AbstractGas end
 """
     Gas{N}
 
 A type that represents an ideal gas that is calorically perfect 
 i.e. ``c_p(T)``, ``h(T)``, ``\\phi(T)`` and ``s(T,P)``.
 """
-mutable struct Gas{N}
+mutable struct Gas{N} <: AbstractGas
    P::Float64 # [Pa]
    T::Float64 # [K]
    Tarray::MVector{8, Float64} # Temperature array to make calcs allocation free
@@ -100,8 +101,9 @@ function Base.getproperty(gas::Gas, sym::Symbol)
       return num ./den
    elseif sym === :Xdict
       X = getproperty(gas, :X)
+      index = X.!=0.0
       names = view(spdict.name, :)
-      return Dict(zip(names, X))
+      return Dict(zip(names[index], X[index]))
    elseif sym === :Ydict
       Y = getproperty(gas, :Y)
       names = view(spdict.name, :)
@@ -221,10 +223,13 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::AbstractDict{String, Floa
       names = spdict.name
       X = zeros(MVector{length(names), Float64})
       Y = zeros(MVector{length(names), Float64})
+      S = 0.0
       for (key,value) in val
          index = findfirst(x->x==key, names)
+         S += value
          X[index] = value
       end
+      X = X./S
       Y .= X2Y(X)
       setfield!(gas, :Y, Y)
       setfield!(gas, :MW, MW(gas))
@@ -272,7 +277,7 @@ with composition:
      ΣYᵢ     1.000     28.965
 ```
 """
-function set_h!(gas::Gas, hspec::Float64)
+function set_h!(gas::AbstractGas, hspec::Float64)
    
    T = gas.T
    dT = T
@@ -303,7 +308,7 @@ Sets the gas state based on a specified change in enthalpy (Δh) [J/mol],
 and a given polytropic efficiency. This represents adding or removing some work
 from the gas.
 """
-function set_Δh!(gas::Gas, Δhspec::Float64, ηp::Float64 = 1.0)
+function set_Δh!(gas::AbstractGas, Δhspec::Float64, ηp::Float64 = 1.0)
    P0 = gas.P
    ϕ0 = gas.ϕ
    hf = gas.h + Δhspec
@@ -316,7 +321,7 @@ end
 
 Calculates state of the gas given enthalpy and pressure (h,P)
 """
-function set_hP!(gas::Gas, hspec::Float64, P::Float64)
+function set_hP!(gas::AbstractGas, hspec::Float64, P::Float64)
    set_h!(gas,hspec)
    gas.P = P
    return gas
@@ -348,7 +353,7 @@ with composition:
 ```
 
 """
-function set_TP!(gas::Gas, T::Float64, P::Float64)
+function set_TP!(gas::AbstractGas, T::Float64, P::Float64)
    gas.T = T
    gas.P = P
    return gas
@@ -360,7 +365,7 @@ end
 
 Compression with an optional polytropic efficiency
 """
-function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
+function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
 
    T0 = gas.T
    ϕ0 = gas.ϕ
@@ -395,4 +400,11 @@ function compress(gas::Gas, PR::Float64, ηp::Float64=1.0,)
 
 end
 
+"""
+    expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
 
+Expansion at a given polytropic efficiency.
+"""
+function expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+   return compress(gas, PR, 1/ηp)
+end
