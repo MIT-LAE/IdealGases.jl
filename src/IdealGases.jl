@@ -18,6 +18,8 @@ export AbstractSpecies, species, composite_species, generate_composite_species
 include("readThermo.jl")
 export readThermo, species_in_spdict
 include("Gas.jl")
+include("Gas1D.jl")
+export Gas1D
 include("combustion.jl")
 
 include("io.jl")
