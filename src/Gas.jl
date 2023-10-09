@@ -201,6 +201,11 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::AbstractVector{Float64})
       setfield!(gas, :Y, MVector{n}(val)) 
       setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
 
+   elseif sym === :X # directly set mole fractions Y
+      n = length(getfield(gas, :Y))
+      Y = X2Y(val)
+      setfield!(gas, :Y, MVector{n}(Y)) 
+      setfield!(gas, :MW, MW(gas)) # Update the MW of the gas mixture
    else
       error("Only mass factions Y can be set with an array.",
       "\n       You tried to set gas.",sym," to a ",typeof(val))
