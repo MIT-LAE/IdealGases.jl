@@ -276,7 +276,7 @@ function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
 
     Xdict = Dict(zip(names, ΔX))
     
-    Xvitiated = mergewith(+, Xin, Xdict)
+    Xvitiated::Dict{String, Float64} = mergewith(+, Xin, Xdict)
 
     return Xvitiated
 end  # function vitiated_gas
@@ -300,6 +300,80 @@ function vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString,
     
 end  # function vitiated_mixture
 
+"""
+    LHV(fuel::AbstractSpecies)
+
+Returns the lower heating value (LHV) of the given fuel at standard conditions.
+
+## Examples
+```julia-repl
+julia> ethanol = species_in_spdict("C2H5OH")
+Species "C2H5OH"
+MW = 46.06844 g/mol
+
+
+julia> IdealGases.LHV(ethanol)/1e6 # convert to MJ/kg
+27.731522925456126
+
+julia> CH4 = species_in_spdict("CH4");
+
+julia> Jet = species_in_spdict("Jet-A(g)");
+
+julia> fuels = [CH4, Jet, ethanol];
+
+julia> IdealGases.LHV.(fuels)./1e6 # Can brodcast across fuels
+3-element Vector{Float64}:
+ 50.027364880448516
+ 43.35316346765443
+ 27.731522925456126
+```
+
+"""
+function LHV(fuel::AbstractSpecies)
+    nCO2, _, nH2O, _ = reaction_change_molar_fraction(fuel.name)
+
+    HfCO2 = -393510.0
+    HfH2O = -241826.0
+    
+    ΔHrxn = (nCO2 * HfCO2 + nH2O * HfH2O) - fuel.Hf
+
+    return -ΔHrxn/fuel.MW*1000.0 #J/kg
+
+end  # function LHV
+"""
+    AFT(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
+
+Calculates the adiabatic flame temperature at standard conditions.
+"""
+function AFT(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
+    molFAR = stoich_molar_FOR(fuel, oxidizer)
+    gas = Gas()
+    dict::Dict{String, Float64} = Dict()
+
+    try 
+        dict = oxidizer.composition
+        push!(dict, fuel.name => molFAR)
+    catch
+        dict = Dict(fuel.name => molFAR, oxidizer.name => 1.0)
+    end
+
+    gas.X = dict
+    gas.T = 298.15
+    Hfr = gas.Hf
+    # Hr298 = gas.h*gas.MW/1000.0
+
+    gas.X = vitiated_mixture(fuel, oxidizer)
+    # Hp298 = gas.h*gas.MW/1000.0
+    Hfp = gas.Hf
+
+    #Energy Balance: Hrf + H(298.15) - Hr298.15 = Hpf + H(T) - Hp298.15
+    #                Hrf - Hpf = ΔH(T)
+    ΔHpsens = Hfr - Hfp 
+    # set_h!(gas, Hpsens)
+    set_Δh!(gas, ΔHpsens, 0.0)
+  
+    return gas.T
+end  # function AFT
 """
     vitiated_species(fuel::AbstractSpecies, oxidizer::AbstractSpecies, 
     FAR::Float64, ηburn::Float64=1.0, name::AbstractString="vitiated species")

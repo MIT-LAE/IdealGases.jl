@@ -93,6 +93,16 @@ function Base.getproperty(gas::Gas, sym::Symbol)
           end
       end
       return getfield(gas, :ϕ) - Rgas*(log(getfield(gas,:P)/Pstd) + Δs_mix)
+   elseif sym === :Hf # formation enthalpy [J/mol]
+      Xi = view(getproperty(gas, :X),:)
+      Hf = view(spdict.Hf, :)
+      H = 0.0
+      for i in eachindex(Xi)
+         H += Xi[i]*Hf[i]
+      end
+      # H += getproperty(gas, :h) * getproperty(gas, :MW)/1000.0
+      return H
+
    elseif sym === :X # Get mole fractions
       Y = getfield(gas, :Y)
       MW = spdict.MW
