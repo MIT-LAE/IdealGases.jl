@@ -340,6 +340,9 @@ function LHV(fuel::AbstractSpecies)
     return -ΔHrxn/fuel.MW*1000.0 #J/kg
 
 end  # function LHV
+
+LHV(fuel::AbstractString) = LHV(species_in_spdict(fuel))
+
 """
     AFT(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
 

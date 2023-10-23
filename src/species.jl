@@ -36,7 +36,7 @@ struct composite_species <: AbstractSpecies
     ahigh::Array{Float64, 1}
     MW::Float64
     Hf::Float64
-    composition::AbstractDict
+    composition::Dict{String, Float64}
 end
 """
     generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")

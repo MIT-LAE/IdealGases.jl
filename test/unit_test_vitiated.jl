@@ -69,7 +69,7 @@ end
     gas = Gas()
     gas1 = Gas1D()
 
-    gas.X = Xair
+    gas.X = DryAir.composition
     @test gas.MW ≈ gas1.comp_sp.MW
     gas.T = gas1.T = 2000.0
     @test gas.T == gas1.T
