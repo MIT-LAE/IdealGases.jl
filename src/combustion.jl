@@ -354,7 +354,7 @@ function AFT(fuel::AbstractSpecies, oxidizer::AbstractSpecies=DryAir)
     dict::Dict{String, Float64} = Dict()
 
     try 
-        dict = oxidizer.composition
+        dict = copy(oxidizer.composition)
         push!(dict, fuel.name => molFAR)
     catch
         dict = Dict(fuel.name => molFAR, oxidizer.name => 1.0)
