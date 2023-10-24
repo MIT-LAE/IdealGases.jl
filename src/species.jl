@@ -65,7 +65,7 @@ function generate_composite_species(Xi::AbstractVector, name::AbstractString="co
     # comp
     d = Dict()
     if !(sum(Xi) ≈ 1.0)
-        error("Gas mixture composition is not well defined. Sum of Xi != 1.0")
+        error("Gas mixture composition is not well defined. Sum of Xi = $(sum(Xi)) != 1.0")
     end
     if any(Xi .< 0.0)
         error("Composition has negative values.")
