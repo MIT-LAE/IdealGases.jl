@@ -102,7 +102,8 @@ function Base.getproperty(gas::Gas, sym::Symbol)
       end
       # H += getproperty(gas, :h) * getproperty(gas, :MW)/1000.0
       return H
-
+   elseif sym === :R #specific gas constant
+      return Runiv/getproperty(gas, :MW) * 1000.0
    elseif sym === :X # Get mole fractions
       Y = getfield(gas, :Y)
       MW = spdict.MW
@@ -375,26 +376,23 @@ function set_TP!(gas::AbstractGas, T::Float64, P::Float64)
 end
 
 
-"""
-    compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
-
-Compression with an optional polytropic efficiency
-"""
-function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+function PressureRatio(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
 
    T0 = gas.T
    ϕ0 = gas.ϕ
    P0 = gas.P
+   R = gas.R
 
    Tfinal = T0 * PR^(Runiv/gas.cp/ηp)
    Pfinal = P0*PR
    dT = Tfinal
    gas.P = Pfinal
    gas.T = Tfinal
-   
+   logPR_ηp = log(PR)/ηp
+
    for i in 1:20# abs(dT)>ϵ
-      res  = (gas.ϕ - ϕ0)/Runiv - log(PR)/ηp
-      res_dT = gas.ϕ_T/Runiv
+      res  = (gas.ϕ - ϕ0)/R - logPR_ηp 
+      res_dT = gas.ϕ_T/R
       dT  = - res/res_dT
 
       if abs(dT) ≤ ϵ
@@ -416,10 +414,27 @@ function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
 end
 
 """
+    compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+
+Compression with an optional polytropic efficiency.PR should be ≥ 1.0.
+"""
+function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+   if PR < 1.0
+      error("The specified pressure ratio (PR) to compress by needs to be ≥ 1.0.
+      Provided PR = $PR. Did you mean to use `expand`?")
+   end
+   return PressureRatio(gas, PR, ηp)
+end
+
+"""
     expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
 
-Expansion at a given polytropic efficiency.
+Expansion at a given polytropic efficiency. PR should be ≤ 1.0.
 """
 function expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
-   return compress(gas, PR, 1/ηp)
+   if PR>1.0
+      error("The specified pressure ratio (PR) to compress by needs to be ≤ 1.0.
+      Provided PR = $PR. Did you mean to use `compress`?")
+   end
+   return PressureRatio(gas, PR, 1/ηp)
 end
