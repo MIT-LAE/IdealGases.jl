@@ -103,6 +103,11 @@ function Base.getproperty(gas::Gas1D, sym::Symbol)
     elseif sym === :s
        Rgas = Runiv/getfield(gas, :comp_sp).MW*1000.0
        return getfield(gas, :ϕ) - Rgas*log(getfield(gas,:P)/Pstd)
+    elseif sym === :MW
+      sp = getfield(gas, :comp_sp)
+      return sp.MW
+    elseif sym === :R #specific gas constant
+       return Runiv/getproperty(gas, :MW) * 1000.0
     else
        return getfield(gas, sym)
     end
