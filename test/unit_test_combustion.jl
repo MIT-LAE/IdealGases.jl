@@ -15,7 +15,6 @@ end
 
     burntgas = IdealGases.fixed_fuel_vitiated_species(CH4, DryAir)
     gas2 = burntgas(FAR)
-    println(sum([val for (key,val) in DryAir.composition]))
 
     @test gas1.MW ≈ gas2.MW
     for (key,val) in gas1.composition
