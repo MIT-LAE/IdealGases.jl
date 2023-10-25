@@ -88,27 +88,33 @@ function Base.setproperty!(gas::Gas1D, sym::Symbol, val::Float64)
     nothing
  end
 
- # Overload Base.getproperty for convinence
+# Overload Base.getproperty for convinence
 function Base.getproperty(gas::Gas1D, sym::Symbol)
-    if sym === :h_T # dh/dT
-       return getfield(gas, :cp)
-    elseif sym === :ϕ_T # dϕ/dT
-       return getfield(gas, :cp)/getfield(gas, :T)
-    elseif sym === :s_T # ∂s/∂T = dϕ/dT
-       return getfield(gas, :cp)/getfield(gas, :T)
-    elseif sym === :hs
-       return [getfield(gas, :h), getfield(gas, :s)]
-    elseif sym === :TP
-       return [getfield(gas, :T), getfield(gas, :P)]
-    elseif sym === :s
-       Rgas = Runiv/getfield(gas, :comp_sp).MW*1000.0
-       return getfield(gas, :ϕ) - Rgas*log(getfield(gas,:P)/Pstd)
-    elseif sym === :MW
+   if sym === :h_T # dh/dT
+      return getfield(gas, :cp)
+   elseif sym === :ϕ_T # dϕ/dT
+      return getfield(gas, :cp) / getfield(gas, :T)
+   elseif sym === :s_T # ∂s/∂T = dϕ/dT
+      return getfield(gas, :cp) / getfield(gas, :T)
+   elseif sym === :hs
+      return [getfield(gas, :h), getfield(gas, :s)]
+   elseif sym === :TP
+      return [getfield(gas, :T), getfield(gas, :P)]
+   elseif sym === :s
+      Rgas = Runiv / getfield(gas, :comp_sp).MW * 1000.0
+      return getfield(gas, :ϕ) - Rgas * log(getfield(gas, :P) / Pstd)
+   elseif sym === :MW
       sp = getfield(gas, :comp_sp)
       return sp.MW
-    elseif sym === :R #specific gas constant
-       return Runiv/getproperty(gas, :MW) * 1000.0
-    else
-       return getfield(gas, sym)
-    end
- end
+   elseif sym === :R #specific gas constant
+      return Runiv / getproperty(gas, :MW) * 1000.0
+   elseif sym === :γ
+      R = getproperty(gas, :R)
+      cp = getproperty(gas, :cp)
+      return cp / (cp - R)
+   elseif sym === :gamma
+      return getproperty(gas, :γ)
+   else
+      return getfield(gas, sym)
+   end
+end
