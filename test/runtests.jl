@@ -8,4 +8,5 @@ using Test
     include("unit_test_vitiated.jl")
     include("unit_test_combustion.jl")
     include("unit_test_humidity.jl")
+    include("unit_test_turbo.jl")
 end
