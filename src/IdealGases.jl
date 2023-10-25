@@ -32,5 +32,6 @@ gas = Gas()
 gas.X = Xair
 const DryAir = generate_composite_species(gas.X, "Dry Air")
 export DryAir
+include("humidity.jl")
 
 end

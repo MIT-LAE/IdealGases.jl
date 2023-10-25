@@ -86,3 +86,36 @@ function X2Y(X::AbstractVector)
     den = dot(X, MW)
     return num ./den
 end  # function X2Y
+
+"""
+    Xidict2Array!(Xdict::Dict{AbstractString, AbstractFloat}, X::AbstractVector{AbstractFloat})
+Convert a mole fraction dictonary into the given array X with the right order of
+compounds.
+"""
+function Xidict2Array!(Xdict::Dict{String, Float64}, X::AbstractVector)
+    names = spdict.name
+    for (key,value) in Xdict
+       index = findfirst(x->x==key, names)
+       X[index] = value
+    end
+    X .= X./sum(X)
+
+    return X
+end  # function Xidict2Array
+
+"""
+    Xidict2Array(Xdict::Dict{String, Float64})
+Converts the dict into a new array with mole fractions in the right order
+"""
+function Xidict2Array(Xdict::Dict{String, Float64})
+    names = spdict.name
+    X = zeros(Float64, Nspecies)
+    for (key,value) in Xdict
+       index = findfirst(x->x==key, names)
+       X[index] = value
+    end
+    # X .= X./sum(X)
+
+    return X
+    
+end  # function Xidict2ArrayXdict
