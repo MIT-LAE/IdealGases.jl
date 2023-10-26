@@ -405,16 +405,10 @@ function vitiated_species(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
     FAR::Float64; ηburn::Float64=1.0, name::AbstractString="vitiated species")
     
     Xdict = vitiated_mixture(fuel, oxidizer, FAR, ηburn)
-    molFAR = FAR * oxidizer.MW/fuel.MW
-    totalmoles = 1 + molFAR
-    names = spdict.name
 
-    X = zeros(MVector{length(names), Float64})
-    for (key,value) in Xdict
-       index = findfirst(x->x==key, names)
-       X[index] = value/totalmoles
-    end
-    
+    X = zeros(Float64, Nspecies)
+    Xidict2Array!(Xdict, X)
+
     return generate_composite_species(X,name)
 end  # function vitiated_species
 
