@@ -1,9 +1,8 @@
 # IdealGases.jl Documentation
 
-`IdealGases.jl` is a tool for fast thermodynamic properties calculations for
-calorically/thermally perfect gases. This assumes that the specifc heat
+`IdealGases.jl` is a tool for fast thermodynamic properties calculations for ideal gases. This assumes that the specifc heat
 of the gas/mixture is only a function of its temperature, i.e., $c_p(T)$ , 
-$h(T)$, and $s(T,p)$.
+$h(T)$, and $s(T,p)$ (note the entropy is a function of both pressure and temperature).
 
 One of the important features of `IdealGases.jl` is the ability to represent
 a mixture of gases as a single [`composite_species`](@ref vitiated).
