@@ -1,3 +1,4 @@
-# Gas.jl
+# IdealGases.jl
 
-A simple package to efficiently calculate calorically perfect ideal gas properties based on NASA polynomials. Can be expanded in the future.
+A simple package to efficiently calculate ideal gas properties based on NASA polynomials.
+This package also introduces a method for fast calculations of thermodynamic properties of mixtures with fixed composition by calculating an equivalent polynomial representation of the mixture.
