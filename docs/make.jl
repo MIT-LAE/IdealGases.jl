@@ -1,5 +1,3 @@
-# using Pkg
-# Pkg.activate("..")
 using Documenter, IdealGases
 
 push!(LOAD_PATH, "../src")
@@ -31,4 +29,8 @@ makedocs(
             )
         )
     )
+)
+
+deploydocs(
+    repo = "github.com/MIT-LAE/IdealGases.jl.git",
 )
