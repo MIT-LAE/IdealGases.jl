@@ -1,6 +1,5 @@
 using Pkg
 Pkg.activate("..")
-using IdealGases
 
 push!(LOAD_PATH, "../src")
 
