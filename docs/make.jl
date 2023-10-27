@@ -1,9 +1,9 @@
-using Pkg
-Pkg.activate("..")
+# using Pkg
+# Pkg.activate("..")
+using Documenter, IdealGases
 
 push!(LOAD_PATH, "../src")
 
-using Documenter
 
 makedocs(
     remotes=nothing,
