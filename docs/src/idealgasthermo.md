@@ -1,10 +1,10 @@
 # Thermodynamic properties of ideal gases
 
 ## Calculating ``c_p, h, s``
-The ``c_p, h, s`` of the gas is calculated using the following `NASA-9` polynomials:
+The ``c_p, h, s`` of a particular species is calculated using the following `NASA-9` polynomials:
 
 $$\begin{aligned}
-\frac{\hat{c}_p^\circ(T)}{\overline{R}} &=
+\cphatR &= %\frac{\hat{c}_p^\circ(T)}{\overline{R}} &=
 && a_1T^{-2}
 &+ &a_2 T^{-1} 
 &+ &a_3 
@@ -13,7 +13,7 @@ $$\begin{aligned}
 &+ &a_6 T^3 
 &+ &a_7 T^4 &&&&\\
    
-\frac{\hat{h}^\circ (T)}{\overline{R} T} &= 
+\hhatRT &= 
 &-&a_1T^{-2}
 &+ &a_2\frac{\ln(T)}{T}
 &+ &a_3 
@@ -23,7 +23,7 @@ $$\begin{aligned}
 &+ &a_7\frac{T^4}{5} 
 &+ &\frac{b_1}{T}&&\\
 
-\frac{\hat{s}^\circ(T)}{\overline{R}} &= 
+\frac{\hat{\phi}^\circ(T)}{\Ru} &= 
 &-&a_1\frac{T^{-2}}{2}
 &- &a_2T^{-1} 
 &+ &a_3 \ln(T) 
@@ -31,18 +31,52 @@ $$\begin{aligned}
 &+ &a_5 \frac{T^2}{2} 
 &+ &a_6 \frac{T^3}{3} 
 &+ &a_7 \frac{T^4}{4} &&
-&+ &b_2 
+&+ &b_2 ,
  \end{aligned}$$
 
-where the $^\circ$ and $\hat{\ }$ denote standard conditions 
-($T_\mathrm{std} = 298.15\, \mathrm{K},\; P_\mathrm{std}=101.325\, \mathrm{kPa}$). These are dropped in the subsequent 
-documentation for convinence.
+where the $^\circ$ and $\hat{\ }$ denote standard pressure ($P_\mathrm{std}=101.325\, \mathrm{kPa}$) and molar basis respectively and ``\Ru = 8.3144\, \mathrm{J\, mol^{-1}\,  K^{-1}}`` is the universal gas constant. 
+
+``\hat{\phi}^\circ``is the entropy complement function (we use ``\phi`` instead of ``s`` to emphasize that the entropy complement is only a function of temperature and not, in general, equal to the entropy) and is equal to ``\hat{s}^\circ`` only at standard pressure. At any pressure other than ``\Pstd`` the entropy ``\hat{s}`` is given by,
+
+```math
+\frac{\hat{s}(T)}{\Ru} = \phihatR - \ln{\frac{P}{\Pstd}}.
+```
+
 
 ```@docs
 IdealGases.Cp
 IdealGases.h
 IdealGases.𝜙
 ```
+
+## [Representing mixtures](@id mixthermo)
+
+The molar specific heat, enthalpy, and entropy of a mixture of ideal gases at standard pressure, ``\Pstd``, is given by,
+
+```math
+\begin{aligned}
+\cpbarR &= \sum_{i=1}^n \Xi\left.\cphatR\right|_i\\
+\hbarRT &= \sum_{i=1}^n \Xi\left.\hhatRT\right|_i\\
+\phibarR &= \sum_{i=1}^n \Xi\left.\phihatR\right|_i + \Xi \ln{\Xi}.
+\\
+
+\end{aligned}
+```
+The term ``\Xi \ln{\Xi}`` in the entropy complement function represents the [*entropy of mixing*](https://en.wikipedia.org/wiki/Entropy_of_mixing) when multiple species are present in the gas mixture.
+
+When ``P \neq \Pstd``, ``\hat{c}_p``, ``\hat{h}``, and ``\phi`` are as above but ``s`` has a pressure term.
+
+```math
+\begin{aligned}
+\overline{\frac{\hat{c}_p (T)}{\Ru}} = \cpbarR &= \sum_{i=1}^n \Xi\left.\cphatR\right|_i\\
+\overline{\frac{\hat{h} (T)}{\Ru T}} = \hbarRT &= \sum_{i=1}^n \Xi\left.\hhatRT\right|_i\\
+\overline{\frac{\hat{\phi}(T)}{\Ru}} = \phibarR &= \sum_{i=1}^n \Xi\left.\phihatR\right|_i + \Xi \ln{\Xi} \\
+\overline{\frac{\hat{s}(T)}{\Ru}} &= \sum_{i=1}^n \Xi\left.\phihatR\right|_i + \Xi \ln{\Xi} - \Xi \ln{\frac{P}{\Pstd}}.
+\\
+
+\end{aligned}
+```
+
 ## Thermodynamic derivatives
 Additionally it is also useful to calculate the following derivatives,
 
