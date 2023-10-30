@@ -60,9 +60,21 @@ $(document).ready(function() {
     }
   ],
   "macros": {
-    "\\fst": "f_{\\mathrm{stoich.}}",
+    "\\Ru": "R_{\\mathrm{univ.}}",
+    "\\shatR": "\\frac{\\hat{s}^\\circ(T)}{\\Ru}",
+    "\\sbarR": "\\overline{\\frac{\\hat{s}^\\circ(T)}{\\Ru}}",
     "\\RR": "\\mathbb{R}",
-    "\\genfuel": "{\\mathrm{C}_{x_{\\mathrm{C}}}\\mathrm{H}_{x_{\\mathrm{H}}}\\mathrm{O}_{x_{\\mathrm{O}}}\\mathrm{N}_{x_{\\mathrm{N}}}}"
+    "\\genfuel": "{\\mathrm{C}_{x_{\\mathrm{C}}}\\mathrm{H}_{x_{\\mathrm{H}}}\\mathrm{O}_{x_{\\mathrm{O}}}\\mathrm{N}_{x_{\\mathrm{N}}}}",
+    "\\hhatRT": "\\frac{\\hat{h}^\\circ (T)}{\\Ru T}",
+    "\\Tstd": "T_{\\mathrm{std}}",
+    "\\Xi": "X_{i}",
+    "\\Pstd": "P_{\\mathrm{std}}",
+    "\\hbarRT": "\\overline{\\frac{\\hat{h}^\\circ (T)}{\\Ru T}}",
+    "\\cphatR": "\\frac{\\hat{c}_p^\\circ(T)}{\\Ru}",
+    "\\fst": "f_{\\mathrm{stoich.}}",
+    "\\cpbarR": "\\overline{\\frac{\\hat{c}_p^\\circ(T)}{\\Ru}}",
+    "\\phibarR": "\\overline{\\frac{\\hat{\\phi}^\\circ(T)}{\\Ru}}",
+    "\\phihatR": "\\frac{\\hat{\\phi}^\\circ(T)}{\\Ru}"
   }
 }
 
