@@ -1,4 +1,4 @@
-## Performance
+## [Performance](@id performance)
 
 In general calculating the thermodynamic properties of a mixture scales with the number of constituent species. 
 The key feature of `IdealGases.jl` is the ability to represent

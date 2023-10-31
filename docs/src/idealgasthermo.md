@@ -77,6 +77,60 @@ When ``P \neq \Pstd``, ``\hat{c}_p``, ``\hat{h}``, and ``\phi`` are as above but
 \end{aligned}
 ```
 
+## [Representing mixtures with fixed composition](@id gas1dthermo)
+
+For mixtures with fixed composition these calculations can be considerably sped up (see [performance](@ref performance)) by defining an equivalent set of coefficients ``\left(\bar{a}_1\; \mathrm{to}\;\bar{a}_7\; \mathrm{and}\; \bar{b}_1,\bar{b}_2\right)`` as follows:
+
+```math
+\begin{aligned}
+\cpbarR &= %\frac{\hat{c}_p^\circ(T)}{\overline{R}} &=
+&&  \bar{a}_1T^{-2}
+&+ &\bar{a}_2 T^{-1} 
+&+ &\bar{a}_3 
+&+ &\bar{a}_4 T 
+&+ &\bar{a}_5T^2 
+&+ &\bar{a}_6 T^3 
+&+ &\bar{a}_7 T^4 &&&&\\
+   
+\hbarRT &= 
+&- &\bar{a}_1T^{-2}
+&+ &\bar{a}_2\frac{\ln(T)}{T}
+&+ &\bar{a}_3 
+&+ &\bar{a}_4\frac{T}{2} 
+&+ &\bar{a}_5\frac{T^2}{3} 
+&+ &\bar{a}_6\frac{T^3}{4} 
+&+ &\bar{a}_7\frac{T^4}{5} 
+&+ &\frac{\bar{b}_1}{T}&&\\
+
+\phibarR &= 
+&- &\bar{a}_1\frac{T^{-2}}{2}
+&- &\bar{a}_2T^{-1} 
+&+ &\bar{a}_3 \ln(T) 
+&+ &\bar{a}_4 T 
+&+ &\bar{a}_5 \frac{T^2}{2} 
+&+ &\bar{a}_6 \frac{T^3}{3} 
+&+ &\bar{a}_7 \frac{T^4}{4} &&
+&+ &\bar{b}_2 ,
+ \end{aligned}
+```
+
+where for each species ``i`` in the mixture (containing ``n`` individual species),
+
+```math
+\begin{aligned}
+\bar{a}_j &= \sum_{i=1}^n a_{j,i} &\forall i \in n \\
+\bar{b}_1 &= \sum_{i=1}^n b_{1,i} &\forall i \in n \\
+\bar{b}_2 &= \sum_{i=1}^n \left(b_{2,i} + \Xi \ln{\Xi} \right)&\forall i \in n.
+\end{aligned}
+
+```
+
+The coefficients on the right-hand side are the original `NASA-9`
+polynomial coefficients for each component species.
+
+!!! note "Note!"
+    The coefficient ``b_2`` (the constant of integration to get ``\phi`` or ``s``) includes the entropy of mixing term ``\Xi \ln{\Xi}``.
+
 ## Thermodynamic derivatives
 Additionally it is also useful to calculate the following derivatives,
 

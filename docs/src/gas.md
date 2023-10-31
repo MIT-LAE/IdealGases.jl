@@ -25,7 +25,7 @@ Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
 
 ## Single component gases
 
-`Gas1D` type objects are a subtype of `AbstractGas` which allows us to use most of the functions that work with [`Gas`](@ref). `Gas1D` types additionally store a representation of the composite species ([`composite_species`](@ref)).
+`Gas1D` type objects are a subtype of `AbstractGas` which allows us to use most of the functions that work with [`Gas`](@ref). `Gas1D` types additionally store a representation of the composite species ([`composite_species`](@ref)). See [here](@ref gas1dthermo) for the theory of representing fixed composition multi-component mixtures as single component mixtures.
 
 ```@docs
 Gas1D
