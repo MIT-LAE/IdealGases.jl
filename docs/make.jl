@@ -38,7 +38,8 @@ makedocs(
                     raw"\cpbarR" => raw"\overline{\frac{\hat{c}_p^\circ(T)}{\Ru}}",
                     raw"\hbarRT" => raw"\overline{\frac{\hat{h}^\circ (T)}{\Ru T}}",
                     raw"\sbarR" => raw"\overline{\frac{\hat{s}^\circ(T)}{\Ru}}",
-                    raw"\phibarR" => raw"\overline{\frac{\hat{\phi}^\circ(T)}{\Ru}}",),
+                    raw"\phibarR" => raw"\overline{\frac{\hat{\phi}^\circ(T)}{\Ru}}",
+                ),
             )
         )
     )
