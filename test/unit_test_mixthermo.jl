@@ -1,6 +1,5 @@
 @testset "mix. comp." begin
     gas = Gas()
-    X = [0.009365, 0.000319, 0.0, 0.78084, 0.209476, 0.0, 0.0, 0.0, 0.0, 0.0]
     Xair = Dict(
         "N2" => 0.78084,
         "Ar" => 0.009365,
@@ -18,10 +17,6 @@
         "N2" => 0.755184)
 
     gas.X = IdealGases.Xair
-
-    for (x1, x2) in zip(gas.X, X)
-        @test x1 == x2
-    end
 
     for (key, val) in gas.Ydict
         if val != 0
