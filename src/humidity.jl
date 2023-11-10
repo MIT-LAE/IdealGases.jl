@@ -21,6 +21,11 @@ function specific_humidity(RH,T,P)
     return ε*PH2O/P
 end  # function specific_humidity
 
+function specific_humidity(sp::composite_species) 
+    comp = sp.composition
+    XH2O = comp["H2O"]
+    return XH2O*ε/(1-XH2O)
+end
 """
     relative_humidity(Hsp, T, P)
 Calculate the relative humidity given specific humidity, T and P.
@@ -32,6 +37,12 @@ function relative_humidity(Hsp, T, P)
 end  # function RH
 
 """
+    generate_humid_air(RH::type, 
+    T::type=Tstd, 
+    P::type=Pstd) where type<:AbstractFloat
+
+Generates a composite species with the given relative humidity,
+temperature, and pressure. Defaults to standard day T, P.
 """
 function generate_humid_air(RH::type, 
     T::type=Tstd, 
