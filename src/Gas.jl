@@ -335,7 +335,7 @@ function set_Δh!(gas::AbstractGas, Δhspec::Float64, ηp::Float64 = 1.0)
    ϕ0 = gas.ϕ
    hf = gas.h + Δhspec
    set_h!(gas, hf)
-   gas.P = P0*exp(ηp/Runiv * (gas.ϕ - ϕ0))
+   gas.P = P0*exp(ηp/gas.R * (gas.ϕ - ϕ0))
    return gas
 end
 """

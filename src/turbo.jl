@@ -1,4 +1,4 @@
-
+# Turbomachinery related functions
 
 """
     PressureRatio(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
@@ -12,7 +12,7 @@ function PressureRatio(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
     P0 = gas.P
     R = gas.R
  
-    Tfinal = T0 * PR^(Runiv/gas.cp/ηp)
+    Tfinal = T0 * PR^(R/gas.cp/ηp)
     Pfinal = P0*PR
     dT = Tfinal
     gas.P = Pfinal
