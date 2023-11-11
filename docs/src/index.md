@@ -18,7 +18,7 @@ The easiest way to run `IdealGases.jl` would be to add the package using the jul
 
 You can do this by starting a Julia session and then activating the package manager by typing `]` and then entering:
 ```julia-repl
-pkg> add "git@github.mit.edu:LAE/Gas.jl.git"
+pkg> add "https://github.com/MIT-LAE/IdealGases.jl.git"
 ```
 
 You can then import `IdealGases` as you would with any Julia package:
@@ -32,7 +32,7 @@ can then fit into a workflow using [`Revise.jl`](https://timholy.github.io/Revis
 
 Step 1: Clone the git repo locally
 ```bash
-git clone git@github.mit.edu:LAE/Gas.jl.git
+git clone https://github.com/MIT-LAE/IdealGases.jl.git
 ```
 
 Step 2: `cd` to the folder where IdealGases is cloned
