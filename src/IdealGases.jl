@@ -21,7 +21,7 @@ include("Gas.jl")
 include("Gas1D.jl")
 export Gas1D
 include("combustion.jl")
-
+include("turbo.jl")
 include("io.jl")
 export print_thermo_table
 include("utils.jl")
