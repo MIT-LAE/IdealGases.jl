@@ -38,7 +38,7 @@ function readThermo(filename)
     for (i, sp) in enumerate(sp_names)
         istart = sp_lines[i]
         formula = Iterators.partition(strip(input[istart+1][11:50]), 8)
-        comp = split.(join.(collect(formula)))
+        comp = split.(join.([i for i in formula]))
         comp = join.(filter!(x->length(x)>1, comp)) #Only get part that has species + moles
         formula = join(comp)
 
