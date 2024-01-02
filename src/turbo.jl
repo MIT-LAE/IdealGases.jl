@@ -93,12 +93,12 @@ Calculates the gas state for a change in Mach number with an optional polytropic
    for iter = 1:itmax
       set_TP!(gas, t, gas.P) #keep pressure constant for now; will be changed later
       
-      #------ usq( t, cp(t,al), r[al] , m )
+      #------ usq( t, cp(t))
       usq = M^2 * gas.γ * gas.R * gas.T
       usq_t = M^2 * gas.γ * gas.R
       usq_cp = M^2 * gas.R / (gas.cp - gas.R) * gas.T - usq / (gas.cp - gas.R)
 
-      #------ res( h[t], usq( t, cp[t] ) )
+      #------ res( h(t), usq( t, cp(t) ) )
       res = gas.h + 0.5 * usq - h0 - 0.5 * uosq
       res_t = gas.cp + 0.5 * (usq_t + usq_cp * gas.cp_T)
       #
