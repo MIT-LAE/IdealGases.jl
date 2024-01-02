@@ -69,3 +69,47 @@ function PressureRatio(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
     end
     return PressureRatio(gas, PR, 1/ηp)
  end
+
+"""
+      gas_Mach!(gas::AbstractGas, M0::Float64, M::Float64, ηp::Float64 = 1.0)
+
+Calculates the gas state for a change in Mach number with an optional polytropic efficiency.
+ """
+ function gas_Mach!(gas::AbstractGas, M0::Float64, M::Float64, ηp::Float64 = 1.0)
+   itmax = 10
+   ttol = 0.000001
+
+   uosq = M0^2 * gas.γ * gas.R * gas.T
+   h0 = gas.h
+   R0 = gas.R 
+   ϕ0 = gas.ϕ
+
+   #---- initial guess for temperature, using constant-gamma relation
+   t = gas.T * (1.0 + 0.5 * (gas.γ - 1) * M0^2) /
+       (1.0 + 0.5 * (gas.γ - 1) * M^2)
+
+   dt = 0.0
+   #---- Newton iteration for actual temperature
+   for iter = 1:itmax
+      set_TP!(gas, t, gas.P) #keep pressure constant for now; will be changed later
+      
+      #------ usq( t, cp(t,al), r[al] , m )
+      usq = M^2 * gas.γ * gas.R * gas.T
+      usq_t = M^2 * gas.γ * gas.R
+      usq_cp = M^2 * gas.R / (gas.cp - gas.R) * gas.T - usq / (gas.cp - gas.R)
+
+      #------ res( h[t], usq( t, cp[t] ) )
+      res = gas.h + 0.5 * usq - h0 - 0.5 * uosq
+      res_t = gas.cp + 0.5 * (usq_t + usq_cp * gas.cp_T)
+      #
+      dt = -res / res_t
+
+      if (abs(dt) < ttol)
+         P = gas.P * exp(ηp * (gas.ϕ - ϕ0) / R0) #calculate pressure with polytropic efficiency
+         set_TP!(gas, gas.T, P)
+         return
+      end
+
+      t = t + dt
+   end
+end
