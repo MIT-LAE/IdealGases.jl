@@ -71,7 +71,7 @@ function Gas()
 
 end
 
-# Overload Base.getproperty for convinence
+# Overload Base.getproperty for convinience
 function Base.getproperty(gas::Gas, sym::Symbol)
    if sym === :h_T # dh/dT
       return getfield(gas, :cp)

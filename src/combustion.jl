@@ -278,6 +278,10 @@ function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
     
     Xvitiated::Dict{String, Float64} = mergewith(+, Xin, Xdict)
 
+    for key in keys(Xvitiated) #Normalize such that sum(Xi) = 1
+        Xvitiated[key] = Xvitiated[key] / (1 + molFAR)
+    end
+
     return Xvitiated
 end  # function vitiated_gas
 
@@ -288,7 +292,7 @@ vitiated_mixture(fuel, oxidizer, stoich_FOR(fuel, oxidizer))
     vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString, 
     FAR::Float64, ηburn::Float64=1.0)
 
-Convinence function that finds fuel and oxidizer from thermo database
+Convenience function that finds fuel and oxidizer from thermo database
 """
 function vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString, 
     FAR::Float64, ηburn::Float64=1.0)
