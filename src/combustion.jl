@@ -279,7 +279,7 @@ function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
     Xvitiated::Dict{String, Float64} = mergewith(+, Xin, Xdict)
 
     for key in keys(Xvitiated) #Normalize such that sum(Xi) = 1
-        Xvitiated[key] = Xvitiated[key] / (1 + molFAR)
+        Xvitiated[key] = Xvitiated[key] / (1 + ηburn * molFAR)
     end
 
     return Xvitiated
@@ -510,3 +510,50 @@ function fixed_fuel_vitiated_species(fuel, oxidizer, ηburn::Float64=1.0)
 
     return burntgas
 end  # function fixed_fuel_vitiated_species
+
+"""
+    fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Float64, 
+    ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
+
+This function returns an `AbstractGas` with the combustion products and at the flame temperature
+for a given fuel type, oxidizer gas at a given enthalpy, and FAR. It includes the combustion 
+efficiency and the fuel enthalpy of vaporization as optional inputs. 
+"""
+function fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Float64, 
+    ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
+    
+    #Create variables corresponding to the oxidizer and fuel species and mixtures
+    fuel_sps = species_in_spdict(fuel)
+
+    #Extract dictionary with oxidizer gas composition
+    if "Air" in keys(gas_ox.Xdict)
+        Xin = Xair
+    else
+        Xin = gas.Xdict
+    end
+
+    gas_sps = generate_composite_species(Xidict2Array(Xin) )
+
+    #Find the vectors with the fuel mole and mass fractions
+    Xfuel = Xidict2Array(Dict([(fuel, 1.0)])) #Mole fraction
+    Yfuel = X2Y(Xfuel) #Mass fraction
+    gas_fuel = Gas(Yfuel) #Create a fuel gas to calculate enthalpy
+
+    set_TP!(gas_fuel, Tf, gas_ox.P) #Set the fuel gas at the correct conditions
+
+    #Find product composition and mole and mass fractions
+    Xprod_dict =  vitiated_mixture(fuel_sps, gas_sps, FAR, ηburn)
+    Xprod = Xidict2Array(Xprod_dict)
+    Yprod = X2Y(Xprod)
+
+    #Initialize output 
+    gas_prod = Gas(Yprod)
+
+    # Combustion enthalpy calculations
+    #enthalpy before reaction = enthalpy after reaction
+    h0 = (gas_ox.h + ηburn * FAR * (gas_fuel.h - abs(hvap))) / (1 + ηburn * FAR)
+
+    #Set the products at the correct enthalpy and pressure
+    set_hP!(gas_prod, h0, gas_ox.P)
+    return gas_prod
+end
