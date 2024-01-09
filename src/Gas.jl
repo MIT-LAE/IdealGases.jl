@@ -71,7 +71,7 @@ function Gas()
 
 end
 
-# Overload Base.getproperty for convinience
+# Overload Base.getproperty for convenience
 function Base.getproperty(gas::Gas, sym::Symbol)
    if sym === :h_T # dh/dT
       return getfield(gas, :cp)
@@ -140,7 +140,7 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
    if sym === :T
       setfield!(gas, :T, val) # first set T
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
-      TT = view(getfield(gas, :Tarray), :) # Just convinence
+      TT = view(getfield(gas, :Tarray), :) # Just convenience
       # Next set the cp, h and s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
@@ -176,7 +176,7 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
    ## Setting Pressure
    elseif sym === :P
       setfield!(gas, :P, val)
-      TT = view(getfield(gas, :Tarray), :) # Just convinence
+      TT = view(getfield(gas, :Tarray), :) # Just convenience
       # Next set s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
