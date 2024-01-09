@@ -529,7 +529,7 @@ function fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Fl
     if "Air" in keys(gas_ox.Xdict)
         Xin = Xair
     else
-        Xin = gas.Xdict
+        Xin = gas_ox.Xdict
     end
 
     gas_sps = generate_composite_species(Xidict2Array(Xin) )
@@ -576,7 +576,7 @@ function gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64
     if "Air" in keys(gas_ox.Xdict)
         Xin = Xair
     else
-        Xin = gas.Xdict
+        Xin = gas_ox.Xdict
     end
 
     gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
