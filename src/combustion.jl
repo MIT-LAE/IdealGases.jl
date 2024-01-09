@@ -601,7 +601,7 @@ function gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64
 
     Xc = Xidict2Array(Xdict)
     Yc = X2Y(Xc) #mass fraction change in combustion for FAR = 1
-
+    
     gas_c = Gas(Yc) #Create a "virtual" gas with the changes in combustion, for enthalpy
                     #calculations
     set_TP!(gas_c, Tburn, gas_ox.P)
@@ -619,7 +619,7 @@ function gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64
     FAR = (ha - ho) / (hf - ηburn * hc - (1 - ηburn) * hff - abs(hvap)) #solve for FAR 
 
     #Find product composition and mole and mass fractions
-    Xprod_dict =  vitiated_mixture(fuel_sps, gas_sps, FAR, ηburn)
+    Xprod_dict = vitiated_mixture(fuel_sps, gas_sps, FAR, ηburn)
     Xprod = Xidict2Array(Xprod_dict)
     Yprod = X2Y(Xprod)
 
