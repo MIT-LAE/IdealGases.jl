@@ -9,7 +9,7 @@ function standard_atmosphere(z, alt_type = "geometric")
     g = 9.80665 #Acceleration of gravity on Earth surface (z = 0)
     R_e = 6.356766e6; #Radius of Earth
 
-    #Initiliaze gas (composition does not change)
+    #Initialize gas (composition does not change)
     gas = Gas1D()
     R = gas.R
 
