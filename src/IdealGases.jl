@@ -27,6 +27,7 @@ export print_thermo_table
 include("utils.jl")
 export X2Y, Y2X
 include("idealgasthermo.jl")
+include("atmosphere.jl")
 
 gas = Gas()
 gas.X = Xair
