@@ -113,3 +113,42 @@ Calculates the gas state for a change in Mach number with an optional polytropic
       t = t + dt
    end
 end
+
+"""
+   gas_mixing(gas1::AbstractGas, gas2::AbstractGas, mratio::Float64)
+
+Calculates the resulting gas after two gases (gas1 and gas2) are mixed at constant pressure, with a mass ratio
+mratio = mass of gas2 / mass gas1.
+ """
+ function gas_mixing(gas1::AbstractGas, gas2::AbstractGas, mratio::Float64)
+
+   #Extract dictionaries with gas molar fractions
+   if "Air" in keys(gas1.Xdict)
+      X1 = Xair
+   else
+      X1 = gas1.Xdict
+   end
+
+   if "Air" in keys(gas2.Xdict)
+      X2 = Xair
+   else
+      X2 = gas2.Xdict
+   end
+
+   X1arr = Xidict2Array(X1)
+   X2arr = Xidict2Array(X2)
+
+   Y1 = X2Y(X1arr) #Vectors with mass fractions
+   Y2 = X2Y(X2arr) #Vectors with mass fractions
+
+   Yp = (Y1 + mratio * Y2) / (1 + mratio) #law of mixtures for mass fractions
+
+   #Initialize output 
+   gas_prod = Gas(Yp)
+
+   hp = (gas1.h + mratio * gas2.h) / (1 + mratio) #Enthalpy of product by law of mixtures
+   set_hP!(gas_prod, hp, gas1.P) #set gas at correct temperature and pressure
+   
+   return gas_prod
+   
+end
