@@ -114,6 +114,13 @@ function Base.getproperty(gas::Gas1D, sym::Symbol)
       return cp / (cp - R)
    elseif sym === :gamma
       return getproperty(gas, :γ)
+   elseif sym === :ρ
+      R = getproperty(gas, :R)
+      T = getfield(gas, :T)
+      P = getfield(gas, :P)
+      return P / (R * T)
+   elseif sym === :rho
+      return getproperty(gas, :ρ)
    else
       return getfield(gas, sym)
    end

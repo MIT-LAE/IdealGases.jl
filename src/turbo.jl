@@ -115,6 +115,51 @@ Calculates the gas state for a change in Mach number with an optional polytropic
 end
 
 """
+   gas_Deltah(gas_in::AbstractGas, deltah::Float64, epol::Float64 = 1.0)
+
+Calculates the gas state for a given change in specific enthalpy (in compression or expansion) and at 
+a given polytropic efficiency. In the case of constant specific heats, this reduces to the classical 
+isentropic relations.
+ """
+function gas_Deltah(gas_in::AbstractGas, deltah::Float64, epol::Float64 = 1.0)
+   itmax = 10
+   ttol = 0.000001
+   gas = deepcopy(gas_in)
+
+   T0 = gas.T
+   cp0 = gas.cp
+   p0 = gas.P
+   h0 = gas.h
+   s0 = gas.s
+
+   T = T0 + deltah / cp0
+
+   dT = 0.0
+   for iter = 1:itmax
+         s = gas.s
+         h = gas.h
+         h_T = gas.h_T
+         cp = gas.cp
+         R = gas.R
+         res = h - h0 - deltah
+         res_T = h_T
+
+         dT = -res / res_T
+
+         if (abs(dT) < ttol)
+            p = p0 * exp(epol * (s - s0) / R)
+            set_TP!(gas, T, p)
+            return gas
+         end
+
+         T = T + dT
+         set_TP!(gas, T, p0)
+   end
+      println("gas_Deltah: convergence failed.  dT =", dT)
+
+end # gas_Deltah
+
+"""
    gas_mixing(gas1::AbstractGas, gas2::AbstractGas, mratio::Float64)
 
 Calculates the resulting gas after two gases (gas1 and gas2) are mixed at constant pressure, with a mass ratio
