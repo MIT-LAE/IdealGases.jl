@@ -42,40 +42,40 @@ function PressureRatio(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
  
  end
  
- """
-     compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
- 
- Compression with an optional polytropic efficiency.PR should be ≥ 1.0.
- See also [`expand`](@ref).
- """
- function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
-    if PR < 1.0
-       error("The specified pressure ratio (PR) to compress by needs to be ≥ 1.0.
-      Provided PR = $PR. Did you mean to use `expand`?")
-    end
-    return PressureRatio(gas, PR, ηp)
- end
- 
- """
-     expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
- 
- Expansion at a given polytropic efficiency. PR should be ≤ 1.0.
- See also [`compress`](@ref).
- """
- function expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
-    if PR>1.0
-       error("The specified pressure ratio (PR) to compress by needs to be ≤ 1.0.
-      Provided PR = $PR. Did you mean to use `compress`?")
-    end
-    return PressureRatio(gas, PR, 1/ηp)
- end
+"""
+   compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+
+Compression with an optional polytropic efficiency.PR should be ≥ 1.0.
+See also [`expand`](@ref).
+"""
+function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+   if PR < 1.0
+      error("The specified pressure ratio (PR) to compress by needs to be ≥ 1.0.
+   Provided PR = $PR. Did you mean to use `expand`?")
+   end
+   return PressureRatio(gas, PR, ηp)
+end
 
 """
-      gas_Mach!(gas::AbstractGas, M0::Float64, M::Float64, ηp::Float64 = 1.0)
+   expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+
+Expansion at a given polytropic efficiency. PR should be ≤ 1.0.
+See also [`compress`](@ref).
+"""
+function expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
+   if PR>1.0
+      error("The specified pressure ratio (PR) to compress by needs to be ≤ 1.0.
+   Provided PR = $PR. Did you mean to use `compress`?")
+   end
+   return PressureRatio(gas, PR, 1/ηp)
+end
+
+"""
+   gas_Mach!(gas::AbstractGas, M0::Float64, M::Float64, ηp::Float64 = 1.0)
 
 Calculates the gas state for a change in Mach number with an optional polytropic efficiency.
- """
- function gas_Mach!(gas::AbstractGas, M0::Float64, M::Float64, ηp::Float64 = 1.0)
+"""
+function gas_Mach!(gas::AbstractGas, M0::Float64, M::Float64, ηp::Float64 = 1.0)
    itmax = 10
    ttol = 0.000001
 
@@ -86,7 +86,7 @@ Calculates the gas state for a change in Mach number with an optional polytropic
 
    #---- initial guess for temperature, using constant-gamma relation
    t = gas.T * (1.0 + 0.5 * (gas.γ - 1) * M0^2) /
-       (1.0 + 0.5 * (gas.γ - 1) * M^2)
+         (1.0 + 0.5 * (gas.γ - 1) * M^2)
 
    dt = 0.0
    #---- Newton iteration for actual temperature
@@ -120,7 +120,7 @@ end
 Calculates the gas state for a given change in specific enthalpy (in compression or expansion) and at 
 a given polytropic efficiency. In the case of constant specific heats, this reduces to the classical 
 isentropic relations.
- """
+"""
 function gas_Deltah(gas_in::AbstractGas, deltah::Float64, epol::Float64 = 1.0)
    itmax = 10
    ttol = 0.000001
@@ -164,20 +164,28 @@ end # gas_Deltah
 
 Calculates the resulting gas after two gases (gas1 and gas2) are mixed at constant pressure, with a mass ratio
 mratio = mass of gas2 / mass gas1.
- """
- function gas_mixing(gas1::AbstractGas, gas2::AbstractGas, mratio::Float64)
+"""
+function gas_mixing(gas1::AbstractGas, gas2::AbstractGas, mratio::Float64)
 
    #Extract dictionaries with gas molar fractions
-   if "Air" in keys(gas1.Xdict)
-      X1 = Xair
+   if typeof(gas1) == Gas1D
+      X1 = gas1.comp_sp.composition
    else
-      X1 = gas1.Xdict
-   end
+      if "Air" in keys(gas1.Xdict)
+         X1 = Xair
+      else
+         X1 = gas1.Xdict
+      end
+  end
 
-   if "Air" in keys(gas2.Xdict)
-      X2 = Xair
+   if typeof(gas2) == Gas1D
+      X2 = gas2.comp_sp.composition
    else
-      X2 = gas2.Xdict
+      if "Air" in keys(gas2.Xdict)
+         X2 = Xair
+      else
+         X2 = gas2.Xdict
+      end
    end
 
    X1arr = Xidict2Array(X1)
@@ -193,7 +201,7 @@ mratio = mass of gas2 / mass gas1.
 
    hp = (gas1.h + mratio * gas2.h) / (1 + mratio) #Enthalpy of product by law of mixtures
    set_hP!(gas_prod, hp, gas1.P) #set gas at correct temperature and pressure
-   
+
    return gas_prod
-   
+
 end

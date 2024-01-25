@@ -525,14 +525,17 @@ function fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Fl
     #Create variables corresponding to the oxidizer and fuel species and mixtures
     fuel_sps = species_in_spdict(fuel)
 
-    #Extract dictionary with oxidizer gas composition
-    if "Air" in keys(gas_ox.Xdict)
-        Xin = Xair
+    #Find oxidizer composition
+    if typeof(gas_ox) == Gas1D
+        gas_sps = gas_ox.comp_sp
     else
-        Xin = gas_ox.Xdict
+        if "Air" in keys(gas_ox.Xdict)
+            Xin = Xair
+        else
+            Xin = gas_ox.Xdict
+        end
+        gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
     end
-
-    gas_sps = generate_composite_species(Xidict2Array(Xin) )
 
     #Find the vectors with the fuel mole and mass fractions
     Xfuel = Xidict2Array(Dict([(fuel, 1.0)])) #Mole fraction
@@ -572,14 +575,17 @@ function gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64
     #Create variables corresponding to the oxidizer and fuel species and mixtures
     fuel_sps = species_in_spdict(fuel)
 
-    #Extract dictionary with oxidizer gas composition
-    if "Air" in keys(gas_ox.Xdict)
-        Xin = Xair
+    #Extract composite species with oxidizer gas composition
+    if typeof(gas_ox) == Gas1D
+        gas_sps = gas_ox.comp_sp
     else
-        Xin = gas_ox.Xdict
+        if "Air" in keys(gas_ox.Xdict)
+            Xin = Xair
+        else
+            Xin = gas_ox.Xdict
+        end
+        gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
     end
-
-    gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
 
     #Find the vectors with the fuel mole and mass fractions
     Xfuel = Xidict2Array(Dict([(fuel, 1.0)])) #Mole fraction
