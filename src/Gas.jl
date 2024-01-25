@@ -27,6 +27,7 @@ Constructs `Gas` with given composition `Y`
 """
 function Gas(Y::AbstractVector)
    gas = Gas(); gas.Y = convert(Vector{Float64}, Y)
+   set_TP!(gas, Tstd, Pstd) #setting temperature and pressure to recalculate thermodynamic properties
    return gas
 end
 
