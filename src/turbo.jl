@@ -51,7 +51,7 @@ See also [`expand`](@ref).
 function compress(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
    if PR < 1.0
       error("The specified pressure ratio (PR) to compress by needs to be ≥ 1.0.
-   Provided PR = $PR. Did you mean to use `expand`?")
+      Provided PR = $PR. Did you mean to use `expand`?")
    end
    return PressureRatio(gas, PR, ηp)
 end
@@ -65,7 +65,7 @@ See also [`compress`](@ref).
 function expand(gas::AbstractGas, PR::Float64, ηp::Float64=1.0,)
    if PR>1.0
       error("The specified pressure ratio (PR) to compress by needs to be ≤ 1.0.
-   Provided PR = $PR. Did you mean to use `compress`?")
+      Provided PR = $PR. Did you mean to use `compress`?")
    end
    return PressureRatio(gas, PR, 1/ηp)
 end
