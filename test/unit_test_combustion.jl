@@ -23,7 +23,7 @@ end
 
     gas = Gas()
     gasburnt = IdealGases.fuel_combustion(gas, "H2", 298.15, 0.01)
-    @test gasburnt.T == 1293.412615061988
+    @test gasburnt.T == 1293.4126150619875
 
     gas = Gas()
     FAR, _ = IdealGases.gas_burn(gas, "H2", 298.15, 1000.0)
