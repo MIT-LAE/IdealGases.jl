@@ -515,7 +515,7 @@ end  # function fixed_fuel_vitiated_species
     fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Float64, 
     ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
 
-This function returns an `AbstractGas` with the combustion products at the flame temperature
+This function returns an `AbstractGas` with the combustion products at the combustor exit temperature
 for a given fuel type, oxidizer gas at a given enthalpy, and FAR. It includes the combustion 
 efficiency and the fuel enthalpy of vaporization as optional inputs. 
 """
@@ -566,7 +566,7 @@ end
     ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
 
 This function returns a tuple containing the FAR and an `AbstractGas` with the combustion 
-products for a given fuel type, oxidizer gas at a given enthalpy, and desired flame temperature. 
+products for a given fuel type, oxidizer gas at a given enthalpy, and desired combustor exit temperature. 
 It includes the combustion efficiency and the fuel enthalpy of vaporization as optional inputs. 
 """
 function gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64, 

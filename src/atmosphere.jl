@@ -3,6 +3,7 @@
 Calculate the gas state at a given desired altitude in the atmosphere using the 1976
 US Standard Atmosphere. Model valid between -5 and 86 km in geometric altitude. Accepts 
 geometric altitude ("alt_type == "geometric") or geopotential altitude ("alt_type == "geopotential"). 
+Model from: `https://ntrs.nasa.gov/citations/19770009539`
 """
 function standard_atmosphere(z, alt_type = "geometric")
 
