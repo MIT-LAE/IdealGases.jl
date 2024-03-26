@@ -11,7 +11,7 @@
     FAR = 0.2
     massFAR = FAR*CH4.MW/O2.MW
     Xdict = IdealGases.vitiated_mixture(CH4, O2, massFAR)
-    @test Xdict["O2"] == 1 - FAR/FARst
+    @test Xdict["O2"] == (1 - FAR/FARst)/(1 + FAR)
 
     # Dry Air combustion 
     FARst = IdealGases.stoich_molar_FOR(CH4, Air)
@@ -20,7 +20,7 @@
     FAR = 0.01
     massFAR = FAR*CH4.MW/Air.MW
     Xdict = IdealGases.vitiated_mixture(CH4, Air, massFAR)
-    @test Xdict["O2"] == Air.composition["O2"]*(1 - FAR/FARst)
+    @test Xdict["O2"] == Air.composition["O2"]*(1 - FAR/FARst) / (1 + FAR)
 
     gas = Gas()
     gas.X = IdealGases.Xair

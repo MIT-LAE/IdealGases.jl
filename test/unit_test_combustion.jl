@@ -21,4 +21,12 @@ end
         @test gas1.composition[key] ≈ gas2.composition[key]
     end
 
+    gas = Gas()
+    gasburnt = IdealGases.fuel_combustion(gas, "H2", 298.15, 0.01)
+    @test gasburnt.T == 1293.4126150619875
+
+    gas = Gas()
+    FAR, _ = IdealGases.gas_burn(gas, "H2", 298.15, 1000.0)
+    @test FAR == 0.006636436988741555
+
 end

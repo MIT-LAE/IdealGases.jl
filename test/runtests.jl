@@ -9,5 +9,6 @@ using Test
     include("unit_test_combustion.jl")
     include("unit_test_humidity.jl")
     include("unit_test_turbo.jl")
+    include("unit_test_atmos.jl")
     include("unit_test_utils.jl")
 end

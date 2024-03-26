@@ -278,6 +278,10 @@ function vitiated_mixture(fuel::AbstractSpecies, oxidizer::AbstractSpecies,
     
     Xvitiated::Dict{String, Float64} = mergewith(+, Xin, Xdict)
 
+    for key in keys(Xvitiated) #Normalize such that sum(Xi) = 1
+        Xvitiated[key] = Xvitiated[key] / (1 + ηburn * molFAR)
+    end
+
     return Xvitiated
 end  # function vitiated_gas
 
@@ -288,7 +292,7 @@ vitiated_mixture(fuel, oxidizer, stoich_FOR(fuel, oxidizer))
     vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString, 
     FAR::Float64, ηburn::Float64=1.0)
 
-Convinence function that finds fuel and oxidizer from thermo database
+Convenience function that finds fuel and oxidizer from thermo database
 """
 function vitiated_mixture(fuel::AbstractString, oxidizer::AbstractString, 
     FAR::Float64, ηburn::Float64=1.0)
@@ -506,3 +510,130 @@ function fixed_fuel_vitiated_species(fuel, oxidizer, ηburn::Float64=1.0)
 
     return burntgas
 end  # function fixed_fuel_vitiated_species
+
+"""
+    fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Float64, 
+    ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
+
+This function returns an `AbstractGas` with the combustion products at the combustor exit temperature
+for a given fuel type, oxidizer gas at a given enthalpy, and FAR. It includes the combustion 
+efficiency and the fuel enthalpy of vaporization as optional inputs. 
+"""
+function fuel_combustion(gas_ox::AbstractGas, fuel::String, Tf::Float64, FAR::Float64, 
+    ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
+    
+    #Create variables corresponding to the oxidizer and fuel species and mixtures
+    fuel_sps = species_in_spdict(fuel)
+
+    #Find oxidizer composition
+    if typeof(gas_ox) == Gas1D
+        gas_sps = gas_ox.comp_sp
+    else
+        if "Air" in keys(gas_ox.Xdict)
+            Xin = Xair
+        else
+            Xin = gas_ox.Xdict
+        end
+        gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
+    end
+
+    #Find the vectors with the fuel mole and mass fractions
+    Xfuel = Xidict2Array(Dict([(fuel, 1.0)])) #Mole fraction
+    Yfuel = X2Y(Xfuel) #Mass fraction
+    gas_fuel = Gas(Yfuel) #Create a fuel gas to calculate enthalpy
+
+    set_TP!(gas_fuel, Tf, gas_ox.P) #Set the fuel gas at the correct conditions
+
+    #Find product composition and mole and mass fractions
+    Xprod_dict =  vitiated_mixture(fuel_sps, gas_sps, FAR, ηburn)
+    Xprod = Xidict2Array(Xprod_dict)
+    Yprod = X2Y(Xprod)
+
+    #Initialize output 
+    gas_prod = Gas(Yprod)
+
+    # Combustion enthalpy calculations
+    #enthalpy before reaction = enthalpy after reaction
+    h0 = (gas_ox.h + FAR * (gas_fuel.h - abs(hvap))) / (1 + FAR)
+
+    #Set the products at the correct enthalpy and pressure
+    set_hP!(gas_prod, h0, gas_ox.P)
+    return gas_prod
+end
+
+"""
+    gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64, 
+    ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
+
+This function returns a tuple containing the FAR and an `AbstractGas` with the combustion 
+products for a given fuel type, oxidizer gas at a given enthalpy, and desired combustor exit temperature. 
+It includes the combustion efficiency and the fuel enthalpy of vaporization as optional inputs. 
+"""
+function gas_burn(gas_ox::AbstractGas, fuel::String, Tf::Float64, Tburn::Float64, 
+    ηburn::Float64 = 1.0, hvap::Float64 = 0.0)
+        
+    #Create variables corresponding to the oxidizer and fuel species and mixtures
+    fuel_sps = species_in_spdict(fuel)
+
+    #Extract composite species with oxidizer gas composition
+    if typeof(gas_ox) == Gas1D
+        gas_sps = gas_ox.comp_sp
+    else
+        if "Air" in keys(gas_ox.Xdict)
+            Xin = Xair
+        else
+            Xin = gas_ox.Xdict
+        end
+        gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
+    end
+
+    #Find the vectors with the fuel mole and mass fractions
+    Xfuel = Xidict2Array(Dict([(fuel, 1.0)])) #Mole fraction
+    Yfuel = X2Y(Xfuel) #Mass fraction
+    gas_fuel = Gas(Yfuel) #Create a fuel gas to calculate enthalpy
+
+    set_TP!(gas_fuel, Tf, gas_ox.P) #Set the fuel gas at the correct conditions
+
+    #Store enthalpies of oxidizer and fuel at original temperatures
+    ho = gas_ox.h 
+    hf = gas_fuel.h 
+
+    #Find change in gas composition for a FAR of 1
+    nCO2, nN2, nH2O, nO2 = reaction_change_molar_fraction(fuel_sps.name)
+
+    names = ["CO2", "H2O", "N2", "O2"]
+    ΔX    = [nCO2,  nH2O,  nN2,  nO2]
+    Xdict = Dict(zip(names, ΔX))
+
+    Xc = Xidict2Array(Xdict)
+    Yc = X2Y(Xc) #mass fraction change in combustion for FAR = 1
+    
+    gas_c = Gas(Yc) #Create a "virtual" gas with the changes in combustion, for enthalpy
+                    #calculations
+    set_TP!(gas_c, Tburn, gas_ox.P)
+
+    hc = gas_c.h #Enthalpy change for FAR = 1
+
+    gas_ox_burnt = deepcopy(gas_ox) #make a copy to avoid modifying the input
+    set_TP!(gas_ox_burnt, Tburn, gas_ox.P)
+    ha = gas_ox_burnt.h #Enthalpy of original oxidizer at final temperature
+
+    set_TP!(gas_fuel, Tburn, gas_ox.P)
+    hff = gas_fuel.h #Enthalpy of fuel at final temperature
+
+    #Find FAR corresponding to Tburn
+    FAR = (ha - ho) / (hf - ηburn * hc - (1 - ηburn) * hff - abs(hvap)) #solve for FAR 
+
+    #Find product composition and mole and mass fractions
+    Xprod_dict = vitiated_mixture(fuel_sps, gas_sps, FAR, ηburn)
+    Xprod = Xidict2Array(Xprod_dict)
+    Yprod = X2Y(Xprod)
+
+    #Initialize output 
+    gas_prod = Gas(Yprod)
+
+    #Set the products at the correct enthalpy and pressure
+    set_TP!(gas_prod, Tburn, gas_ox.P)
+
+    return FAR, gas_prod
+end

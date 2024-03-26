@@ -27,6 +27,7 @@ Constructs `Gas` with given composition `Y`
 """
 function Gas(Y::AbstractVector)
    gas = Gas(); gas.Y = convert(Vector{Float64}, Y)
+   set_TP!(gas, Tstd, Pstd) #setting temperature and pressure to recalculate thermodynamic properties
    return gas
 end
 
@@ -71,7 +72,7 @@ function Gas()
 
 end
 
-# Overload Base.getproperty for convinence
+# Overload Base.getproperty for convenience
 function Base.getproperty(gas::Gas, sym::Symbol)
    if sym === :h_T # dh/dT
       return getfield(gas, :cp)
@@ -110,6 +111,17 @@ function Base.getproperty(gas::Gas, sym::Symbol)
       return cp/(cp - R)
    elseif sym === :gamma
       return getproperty(gas, :γ)
+   elseif sym === :ρ
+      R = getproperty(gas, :R)
+      T = getfield(gas, :T)
+      P = getfield(gas, :P)
+      return P / (R * T)
+   elseif sym === :rho
+      return getproperty(gas, :ρ)
+   elseif sym === :ν     
+      return 1 / getproperty(gas, :ρ)
+   elseif sym === :nu     
+      return getproperty(gas, :ν)
    elseif sym === :X # Get mole fractions
       Y = getfield(gas, :Y)
       MW = spdict.MW
@@ -140,7 +152,7 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
    if sym === :T
       setfield!(gas, :T, val) # first set T
       setfield!(gas, :Tarray, Tarray!(val, getfield(gas, :Tarray))) # update Tarray
-      TT = view(getfield(gas, :Tarray), :) # Just convinence
+      TT = view(getfield(gas, :Tarray), :) # Just convenience
       # Next set the cp, h and s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
@@ -176,7 +188,7 @@ function Base.setproperty!(gas::Gas, sym::Symbol, val::Float64)
    ## Setting Pressure
    elseif sym === :P
       setfield!(gas, :P, val)
-      TT = view(getfield(gas, :Tarray), :) # Just convinence
+      TT = view(getfield(gas, :Tarray), :) # Just convenience
       # Next set s of the gas
       ## Get the right coefficients 
       ## (assumes Tmid is always 1000.0. Check performed in readThermo.jl.):
