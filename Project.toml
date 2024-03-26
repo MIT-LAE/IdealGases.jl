@@ -1,7 +1,7 @@
 name = "IdealGases"
 uuid = "d4fb33c0-2494-4384-b7a5-e5d0487b6649"
 authors = ["Prashanth Prakash <prash@mit.edu> and contributors"]
-version = "1.0.0-DEV"
+version = "1.0.0"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
