@@ -1,7 +1,7 @@
 using IdealGases
 using Test
 
-@testset "IdealGases" verbose=true begin
+@testset "IdealGases" verbose = true begin
     include("unit_test_readthermo.jl")
     include("unit_test_mixthermo.jl")
     include("unit_test_composite.jl")

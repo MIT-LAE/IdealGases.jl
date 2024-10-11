@@ -17,7 +17,7 @@ end
     gas2 = burntgas(FAR)
 
     @test gas1.MW ≈ gas2.MW
-    for (key,val) in gas1.composition
+    for (key, val) in gas1.composition
         @test gas1.composition[key] ≈ gas2.composition[key]
     end
 
