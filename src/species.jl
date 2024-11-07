@@ -13,8 +13,8 @@ See [here](https://shepherd.caltech.edu/EDL/PublicResources/sdt/formats/nasa.htm
 struct species <: AbstractSpecies
     name::String
     Tmid::Float64
-    alow::Array{Float64, 1}
-    ahigh::Array{Float64, 1}
+    alow::Array{Float64,1}
+    ahigh::Array{Float64,1}
     MW::Float64
     Hf::Float64
     formula::AbstractString
@@ -32,11 +32,11 @@ See [here](@ref gas1dthermo) for a more detailed explanation.
 struct composite_species <: AbstractSpecies
     name::String
     Tmid::Float64
-    alow::Array{Float64, 1}
-    ahigh::Array{Float64, 1}
+    alow::Array{Float64,1}
+    ahigh::Array{Float64,1}
     MW::Float64
     Hf::Float64
-    composition::Dict{String, Float64}
+    composition::Dict{String,Float64}
 end
 """
     generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")
@@ -44,7 +44,10 @@ end
 Generates a composite psuedo-species to represent a gas mixture given the
 mole fraction `Xi` of its constitutents.
 """
-function generate_composite_species(Xi::AbstractVector, name::AbstractString="composite species")
+function generate_composite_species(
+    Xi::AbstractVector,
+    name::AbstractString = "composite species",
+)
     ALOW = reduce(hcat, spdict.alow)
     AHIGH = reduce(hcat, spdict.ahigh)
     alow = ALOW * Xi
@@ -55,7 +58,7 @@ function generate_composite_species(Xi::AbstractVector, name::AbstractString="co
     Δs_mix = 0.0
     for i in eachindex(Xi)
         if Xi[i] != 0.0
-            Δs_mix = Δs_mix + Xi[i]*log(Xi[i])
+            Δs_mix = Δs_mix + Xi[i] * log(Xi[i])
         end
     end
     # This is independent of temperature represented by the constant of integration:

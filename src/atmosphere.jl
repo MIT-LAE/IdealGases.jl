@@ -8,7 +8,7 @@ Model from: `https://ntrs.nasa.gov/citations/19770009539`
 function standard_atmosphere(z, alt_type = "geometric")
 
     g = 9.80665 #Acceleration of gravity on Earth surface (z = 0)
-    R_e = 6.356766e6; #Radius of Earth
+    R_e = 6.356766e6 #Radius of Earth
 
     #Initialize gas (composition does not change)
     gas = Gas1D()
@@ -30,7 +30,7 @@ function standard_atmosphere(z, alt_type = "geometric")
 
     #Table lookup to find atmospheric region
     ind = 1
-    for i in 1:length(H0s)
+    for i ∈ eachindex(H0s)
         if H > H0s[i]
             ind = i
         end

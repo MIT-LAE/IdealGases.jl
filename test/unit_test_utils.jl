@@ -8,7 +8,7 @@
         @test X1[i] == X[i]
     end
     IdealGases.Xidict2Array!(Xdict, X1)
-    X = X/sum(X)
+    X = X / sum(X)
     for i in eachindex(X)
         @test X1[i] == X[i]
     end
