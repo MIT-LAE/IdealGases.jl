@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Performance benchmarks · IdealGases.jl</title><meta name="title" content="Performance benchmarks · IdealGases.jl"/><meta property="og:title" content="Performance benchmarks · IdealGases.jl"/><meta property="twitter:title" content="Performance benchmarks · IdealGases.jl"/><meta name="description" content="Documentation for IdealGases.jl."/><meta property="og:description" content="Documentation for IdealGases.jl."/><meta property="twitter:description" content="Documentation for IdealGases.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="IdealGases.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="IdealGases.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">IdealGases.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../readthermo/">Thermodynamic Data</a></li><li><a class="tocitem" href="../gas/">Gas and Species</a></li><li><a class="tocitem" href="../idealgasthermo/">Ideal gas thermodynamics</a></li><li><a class="tocitem" href="../combustion/">Combustion</a></li><li class="is-active"><a class="tocitem" href>Performance benchmarks</a><ul class="internal"><li><a class="tocitem" href="#performance"><span>Performance</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Performance benchmarks</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Performance benchmarks</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/MIT-LAE/IdealGases.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/MIT-LAE/IdealGases.jl/blob/main/docs/src/benchmark.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h2 id="performance"><a class="docs-heading-anchor" href="#performance">Performance</a><a id="performance-1"></a><a class="docs-heading-anchor-permalink" href="#performance" title="Permalink"></a></h2><p>In general calculating the thermodynamic properties of a mixture scales with the number of constituent species.  The key feature of <code>IdealGases.jl</code> is the ability to represent a mixture of gases as a single <code>composite_species</code> which can provide noticable performance improvements.</p><p>Below is an example. We first create a function that sets the gas temp 100 times and calculates <span>$c_p$</span>, <span>$h$</span>, <span>$\phi$</span>, and <span>$dc_p/dT$</span>. We do this so that </p><pre><code class="language-julia hljs">TT = rand(200.:600., 100)
+
+function benchmark_Gas(TT::AbstractVector, gas::AbstractGas)
+    @views for i in eachindex(TT)
+        gas.T = TT[i]; 
+        gas.cp
+        gas.ϕ
+        gas.h
+        gas.cp_T
+    end
+end</code></pre><p>We now initialze a <code>Gas</code> and <code>Gas1D</code> instances and benchmark the above function.</p><pre><code class="language-julia hljs">gas = Gas()
+gas1D = Gas1D()
+
+using BenchmarkTools
+
+julia&gt; @benchmark benchmark_Gas($TT, $gas1D)
+BenchmarkTools.Trial: 10000 samples with 9 evaluations.
+ Range (min … max):  2.778 μs …  12.551 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     2.884 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   2.909 μs ± 202.135 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▂█▅▅ ▄▇▇▅▃▃▃▃▂▂▁                                            ▂
+  ████████████████▆▆▇▇▆▆▆██▆▆▇▇█▇▇▇▇▇▇▆▇▆▆▅▆▆▅▅▆▄▆▄▆▅▆▅▆▆▆▅▄▆ █
+  2.78 μs      Histogram: log(frequency) by time      3.74 μs &lt;
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+
+julia&gt; @benchmark benchmark_Gas($TT, $gas)
+BenchmarkTools.Trial: 10000 samples with 4 evaluations.
+ Range (min … max):  7.604 μs …  13.541 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     7.667 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   7.922 μs ± 561.794 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ██▂ ▂▄▅▄▅▃▁▂▂▂                                              ▂
+  ███▆███████████▇▇▇█▇▇▇▇█▇▆██▇███▇▆▇▆▇▇▇▆▇▇▇▆▇▆▇▆▆▇▇▆▆▇▇▇▆▅▅ █
+  7.6 μs       Histogram: log(frequency) by time      10.2 μs &lt;
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+</code></pre><p>We see that the <code>Gas1D</code> calculations are ~3x faster. If we repeat this with a mixture that has more species the time taken for the <code>Gas</code> type calculation roughly scales with the number of species where as the <code>Gas1D</code> type calculations are independent of the number of constituent species in the gas.</p><p>For 10 components:</p><pre><code class="language-julia-repl hljs">julia&gt; @benchmark benchmark_Gas($TT, $gas)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  17.208 μs … 149.167 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     17.875 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   18.134 μs ±   1.755 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▂▃▁  ▁█▇▅▃▂▃▄▄▃▂▁▁▁▂▃▁                                       ▂
+  ███▆▅█████████████████▇▅▅▅▆▅▅▅▄▅▅▅▅▄▄▅▅▅▆▃▅▁▅▅▆▄▄▅▅▅▅▆▅▅▄▅▆▆ █
+  17.2 μs       Histogram: log(frequency) by time      22.6 μs &lt;
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+
+julia&gt; @benchmark benchmark_Gas($TT, $gas1D)
+BenchmarkTools.Trial: 10000 samples with 9 evaluations.
+ Range (min … max):  2.792 μs …  13.907 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     2.903 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   2.958 μs ± 233.528 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▁▁   █▇▆▄▄▄▄▂▁▁▂▂▂▁                                         ▁
+  ██▇▄███████████████▇▅▅▆▆▆▆▆▆▄▆▇▇▇▇▆▆▇▇▇▇▆▆▆▆▅▆▆▆▅▇▅▆▅▅▅▅▅▆▆ █
+  2.79 μs      Histogram: log(frequency) by time      3.75 μs &lt;
+
+ Memory estimate: 0 bytes, allocs estimate: 0.</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../combustion/">« Combustion</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 7 November 2024 15:55">Thursday 7 November 2024</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
