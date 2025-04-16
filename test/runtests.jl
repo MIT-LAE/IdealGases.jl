@@ -1,7 +1,9 @@
-using IdealGases
+using IdealGasThermo
 using Test
 
-@testset "IdealGases" verbose = true begin
+const IdealGasThermo = IdealGasThermo
+
+@testset "IdealGasThermo" verbose = true begin
     include("unit_test_readthermo.jl")
     include("unit_test_mixthermo.jl")
     include("unit_test_composite.jl")

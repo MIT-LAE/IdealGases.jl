@@ -1,7 +1,7 @@
 ## [Performance](@id performance)
 
 In general calculating the thermodynamic properties of a mixture scales with the number of constituent species. 
-The key feature of `IdealGases.jl` is the ability to represent
+The key feature of `IdealGasThermo.jl` is the ability to represent
 a mixture of gases as a single `composite_species` which can provide noticable performance improvements.
 
 Below is an example. We first create a function that sets the gas temp 100 times and calculates $c_p$, $h$, $\phi$, and $dc_p/dT$. We do this so that 

@@ -1,17 +1,17 @@
 # Reading thermodynamic data
 
-`IdealGases.jl` uses the `NASA-9` polynomials to calculate the thermodynamic properties (``c_p, h, s``)
+`IdealGasThermo.jl` uses the `NASA-9` polynomials to calculate the thermodynamic properties (``c_p, h, s``)
 
 ```@docs
 readThermo
 ```
 ## Default species included
 
-A number of species of interest are included in `IdealGases.jl`.
+A number of species of interest are included in `IdealGasThermo.jl`.
 
 ```@example
-using IdealGases #hide
-println(IdealGases.spdict.name) #hide
+using IdealGasThermo #hide
+println(IdealGasThermo.spdict.name) #hide
 ```
 
 ## Adding new species

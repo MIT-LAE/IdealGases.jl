@@ -1,6 +1,6 @@
 # Modeling combustion
 
-`IdealGases` allows us to perform simple combustion calculations. 
+`IdealGasThermo` allows us to perform simple combustion calculations. 
 The following functions are useful utilites to do so.
 
 ## Calculating stoichiometric fuel-oxidizer ratio 
@@ -48,12 +48,12 @@ produces ``n_{\mathrm{CO}_2}`` moles of ``\mathrm{CO}_2``,
 ``n_{\mathrm{N}_2}`` moles of ``\mathrm{N}_2``".
 
 ```@docs
-IdealGases.fuelbreakdown
-IdealGases.stoich_molar_fuel_oxy_ratio
-IdealGases.stoich_molar_FOR
-IdealGases.stoich_FOR
-IdealGases.reaction_change_fraction
-IdealGases.reaction_change_molar_fraction
+IdealGasThermo.fuelbreakdown
+IdealGasThermo.stoich_molar_fuel_oxy_ratio
+IdealGasThermo.stoich_molar_FOR
+IdealGasThermo.stoich_FOR
+IdealGasThermo.reaction_change_fraction
+IdealGasThermo.reaction_change_molar_fraction
 ```
 
 ## [Vitiated gas composition](@id vitiated)
@@ -111,7 +111,7 @@ f
 
 
 ```@docs
-IdealGases.vitiated_mixture
-IdealGases.vitiated_species
-IdealGases.fixed_fuel_vitiated_species
+IdealGasThermo.vitiated_mixture
+IdealGasThermo.vitiated_species
+IdealGasThermo.fixed_fuel_vitiated_species
 ```

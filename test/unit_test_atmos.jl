@@ -6,7 +6,7 @@
     Ps = [35651, 7565.2, 1616.1, 377.13, 102.29, 28.723, 7.0529, 1.4673]
 
     for (i, Z) in enumerate(Zs)
-        gas = IdealGases.standard_atmosphere(Z)
+        gas = IdealGasThermo.standard_atmosphere(Z)
 
         @test gas.T ≈ Ts[i] rtol = 1e-4
         @test gas.P ≈ Ps[i] rtol = 1e-4

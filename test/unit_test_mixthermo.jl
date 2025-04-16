@@ -18,7 +18,7 @@
         "N2" => 0.755184,
     )
 
-    gas.X = IdealGases.Xair
+    gas.X = IdealGasThermo.Xair
 
     for (key, val) in gas.Ydict
         if val != 0
@@ -32,24 +32,24 @@ end
 
 @testset "mix. thermo" begin
     gas = Gas()
-    gas.X = Xair = IdealGases.Xair
+    gas.X = Xair = IdealGasThermo.Xair
 
     Air = species_in_spdict("Air")
 
     # Low temp:
-    gas.T = T = IdealGases.Tstd
-    gas.P = P = IdealGases.Pstd
+    gas.T = T = IdealGasThermo.Tstd
+    gas.P = P = IdealGasThermo.Pstd
 
-    @test gas.cp ≈ IdealGases.Cp(T, Air) rtol = 1e-7
-    @test gas.h ≈ IdealGases.h(T, Air) rtol = 1e-7
-    @test gas.s ≈ IdealGases.s(T, P, Air) rtol = 1e-7
+    @test gas.cp ≈ IdealGasThermo.Cp(T, Air) rtol = 1e-7
+    @test gas.h ≈ IdealGasThermo.h(T, Air) rtol = 1e-7
+    @test gas.s ≈ IdealGasThermo.s(T, P, Air) rtol = 1e-7
 
     # High temp:
     gas.T = T = 20 * T
     gas.P = P = 20 * P
-    @test gas.cp ≈ IdealGases.Cp(T, Air) rtol = 1e-7
-    @test gas.h ≈ IdealGases.h(T, Air) rtol = 1e-7
-    @test gas.s ≈ IdealGases.s(T, P, Air) rtol = 1e-7
+    @test gas.cp ≈ IdealGasThermo.Cp(T, Air) rtol = 1e-7
+    @test gas.h ≈ IdealGasThermo.h(T, Air) rtol = 1e-7
+    @test gas.s ≈ IdealGasThermo.s(T, P, Air) rtol = 1e-7
 
 
     # Temp range test from https://cearun.grc.nasa.gov/cgi-bin/ThermoBuild/properties-3.pl
@@ -144,8 +144,8 @@ end
 
     @testset "Temp range" begin
         Trange = 200.0:100.0:2000.0
-        gas.P = IdealGases.Pstd
-        Trange, cp_array, h_array, 𝜙_array, s_array = IdealGases.thermo_table(gas, Trange)
+        gas.P = IdealGasThermo.Pstd
+        Trange, cp_array, h_array, 𝜙_array, s_array = IdealGasThermo.thermo_table(gas, Trange)
         for i in eachindex(Trange)
             @test cp_array[i] .* gas.MW ./ 1e3 ≈ Cp[i] atol = 1e-3
             @test h_array[i] .* gas.MW ./ 1e6 ≈ H[i] atol = 1e-3

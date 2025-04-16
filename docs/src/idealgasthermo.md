@@ -44,9 +44,9 @@ where the $^\circ$ and $\hat{\ }$ denote standard pressure ($P_\mathrm{std}=101.
 
 
 ```@docs
-IdealGases.Cp
-IdealGases.h
-IdealGases.𝜙
+IdealGasThermo.Cp
+IdealGasThermo.h
+IdealGasThermo.𝜙
 ```
 
 ## [Representing mixtures](@id mixthermo)

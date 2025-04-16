@@ -7,19 +7,19 @@ Returns the number of C, H, O, and N atoms that the fuel is composed of.
 # Examples
 ```julia-repl
 
-julia> IdealGases.fuelbreakdown("CH4")' #transpose is simply to save space in the docs
+julia> IdealGasThermo.fuelbreakdown("CH4")' #transpose is simply to save space in the docs
 1×4 adjoint(::Vector{Float64}) with eltype Float64:
  1.0  4.0  0.0  0.0
 
-julia> IdealGases.fuelbreakdown("C12H23.5")'
+julia> IdealGasThermo.fuelbreakdown("C12H23.5")'
 1×4 adjoint(::Vector{Float64}) with eltype Float64:
  12.0  23.5  0.0  0.0
 
-julia> IdealGases.fuelbreakdown("CH3COOH")'
+julia> IdealGasThermo.fuelbreakdown("CH3COOH")'
 1×4 adjoint(::Vector{Float64}) with eltype Float64:
  2.0  4.0  2.0  0.0
 
-julia> IdealGases.fuelbreakdown("CH3CH2OH")'
+julia> IdealGasThermo.fuelbreakdown("CH3CH2OH")'
 1×4 adjoint(::Vector{Float64}) with eltype Float64:
  2.0  6.0  1.0  0.0
 
@@ -126,7 +126,7 @@ Assume fuel of type  CᵢHⱼOₖNₗ , then
 
 # Examples
 ```julia-repl
-julia> IdealGases.reaction_change_molar_fraction("CH4")
+julia> IdealGasThermo.reaction_change_molar_fraction("CH4")
 4-element Vector{Float64}:
   1.0
   0.0
@@ -153,12 +153,12 @@ Calculates the molar fuel-**oxygen** ratio for stoichiometric combustion.
 
 # Examples
 ```julia-repl
-julia> using IdealGases
+julia> using IdealGasThermo
 
-julia> IdealGases.stoich_molar_fuel_oxy_ratio("CH4")
+julia> IdealGasThermo.stoich_molar_fuel_oxy_ratio("CH4")
 0.5
 
-julia> IdealGases.stoich_molar_fuel_oxy_ratio("C12H23")
+julia> IdealGasThermo.stoich_molar_fuel_oxy_ratio("C12H23")
 0.056338028169014086
 ```
 """
@@ -178,7 +178,7 @@ and arbitrary fuel and oxidizer.
 ```julia-repl
 julia> CH4 = species_in_spdict("CH4");
 
-julia> IdealGases.stoich_molar_FOR(CH4)
+julia> IdealGasThermo.stoich_molar_FOR(CH4)
 0.104738
 ```
 """
@@ -205,7 +205,7 @@ and arbitrary fuel and oxidizer.
 
 # Examples
 ```julia-repl
-julia> IdealGases.stoich_FOR(CH4)
+julia> IdealGasThermo.stoich_FOR(CH4)
 0.05800961333050494
 ```
 """
@@ -230,9 +230,9 @@ specified FAR. *Note* the sum of result in general will **not** sum to 1.
 ```julia-repl
 julia> CH4 = species_in_spdict("CH4");
 
-julia> Air = IdealGases.DryAir;
+julia> Air = IdealGasThermo.DryAir;
 
-julia> IdealGases.vitiated_mixture(CH4, Air, 0.04)
+julia> IdealGasThermo.vitiated_mixture(CH4, Air, 0.04)
 Dict{Any, Any} with 6 entries:
   "O2"  => 0.0650337
   "CH4" => 0.0
@@ -241,7 +241,7 @@ Dict{Any, Any} with 6 entries:
   "CO2" => 0.0725401
   "N2"  => 0.78084
 
-julia> IdealGases.vitiated_mixture(CH4, Air)
+julia> IdealGasThermo.vitiated_mixture(CH4, Air)
 Dict{Any, Any} with 6 entries:
   "O2"  => 0.0
   "CH4" => 0.0
@@ -323,7 +323,7 @@ Species "C2H5OH"
 MW = 46.06844 g/mol
 
 
-julia> IdealGases.LHV(ethanol)/1e6 # convert to MJ/kg
+julia> IdealGasThermo.LHV(ethanol)/1e6 # convert to MJ/kg
 27.731522925456126
 
 julia> CH4 = species_in_spdict("CH4");
@@ -332,7 +332,7 @@ julia> Jet = species_in_spdict("Jet-A(g)");
 
 julia> fuels = [CH4, Jet, ethanol];
 
-julia> IdealGases.LHV.(fuels)./1e6 # Can brodcast across fuels
+julia> IdealGasThermo.LHV.(fuels)./1e6 # Can brodcast across fuels
 3-element Vector{Float64}:
  50.027364880448516
  43.35316346765443
@@ -398,7 +398,7 @@ assumed.
 
 # Examples
 ```julia-repl
-julia> IdealGases.vitiated_species(CH4, Air, 0.05, name = "CH4-Air-0.05")
+julia> IdealGasThermo.vitiated_species(CH4, Air, 0.05, name = "CH4-Air-0.05")
 Composite Species: "CH4-Air-0.05"
 MW = 27.89510190126262 g/mol
 with composition:
@@ -460,8 +460,8 @@ This is ~4x faster than doing
 
 ## Examples
 ```julia-repl
-julia> burntgas = IdealGases.fixed_fuel_vitiated_species(CH4, Air)
-(::IdealGases.var"#burntgas#52"{species, composite_species, Vector{Float64}, Vector{Float64}, Float64}) (generic function with 1 method)
+julia> burntgas = IdealGasThermo.fixed_fuel_vitiated_species(CH4, Air)
+(::IdealGasThermo.var"#burntgas#52"{species, composite_species, Vector{Float64}, Vector{Float64}, Float64}) (generic function with 1 method)
 
 julia> burntgas(0.05)
 Composite Species: "burntgas(CH4 + Dry Air; 0.05)"
@@ -556,7 +556,7 @@ function fuel_combustion(
         else
             Xin = gas_ox.Xdict
         end
-        gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
+        gas_sps = generate_composite_species(IdealGasThermo.Xidict2Array(Xin))
     end
 
     #Find the vectors with the fuel mole and mass fractions
@@ -612,7 +612,7 @@ function gas_burn(
         else
             Xin = gas_ox.Xdict
         end
-        gas_sps = generate_composite_species(IdealGases.Xidict2Array(Xin))
+        gas_sps = generate_composite_species(IdealGasThermo.Xidict2Array(Xin))
     end
 
     #Find the vectors with the fuel mole and mass fractions

@@ -1,11 +1,11 @@
-using Documenter, IdealGases
+using Documenter, IdealGasThermo
 
 push!(LOAD_PATH, "../src")
 
 
 makedocs(
-    repo = Documenter.Remotes.GitHub("MIT-LAE", "IdealGases.jl"),
-    sitename = "IdealGases.jl",
+    repo = Documenter.Remotes.GitHub("MIT-LAE", "IdealGasThermo.jl"),
+    sitename = "IdealGasThermo.jl",
     pages = [
         "Home" => "index.md",
         "Thermodynamic Data" => "readthermo.md",
@@ -45,4 +45,4 @@ makedocs(
     ),
 )
 
-deploydocs(repo = "github.com/MIT-LAE/IdealGases.jl.git")
+deploydocs(repo = "github.com/MIT-LAE/IdealGasThermo.jl.git")

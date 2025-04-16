@@ -1,7 +1,7 @@
 # Representing ideal gases
 
 ## Pure (single-component) gases
-`IdealGases.jl` exports the `species` type which stores relevant thermodynamic
+`IdealGasThermo.jl` exports the `species` type which stores relevant thermodynamic
 information about a single element/compound. See [`readThermo`](@ref).
 
 ```@docs
@@ -14,7 +14,7 @@ species
 composite_species
 ```
 ## Gas mixtures
-`IdealGases.jl` exports the `Gas` type which stores relevant thermodynamic
+`IdealGasThermo.jl` exports the `Gas` type which stores relevant thermodynamic
 information about the gas mixture.
 
 ```@docs

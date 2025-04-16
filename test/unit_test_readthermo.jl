@@ -1,6 +1,6 @@
 @testset "read thermo" begin
 
-    species_dict = readThermo(IdealGases.default_thermo_path)
+    species_dict = readThermo(IdealGasThermo.default_thermo_path)
     Air = species_dict[findfirst(x -> x == "Air", species_dict.name)]
 
     @test Air.MW == 28.9651159
