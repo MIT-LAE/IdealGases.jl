@@ -13,7 +13,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 julia = "1.11"
 StaticArrays = "1.9"
-StructArrays = "0.7"
 LinearAlgebra = "1"
 Printf = "1"
 Test = "1"
